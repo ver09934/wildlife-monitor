@@ -5,18 +5,13 @@
     <link rel="stylesheet" type="text/css" href="main.css">
   </head>
   <body>
-    
     <?php
       include 'menu.php';
     ?>
-    
     <div id="main">
       
       <h1>Wildlife Monitor Homepage</h1>
-      
       <h2>Recent Activity</h2>
-      
-      
       
       <table>
         <tr>
@@ -36,14 +31,9 @@
         </tr>
       </table>
       
-      
       <h2>Debug</h2>
-      
       <p>This is placeholder text.</p>
 
-
-      
     </div>
-    
   </body>
 </html>
