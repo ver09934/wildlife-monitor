@@ -1,0 +1,4 @@
+# .gitignore for wildlife monitor
+
+# nano/vim backup files
+*.sw*
