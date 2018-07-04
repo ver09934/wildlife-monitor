@@ -1,0 +1,63 @@
+/* --- Debugging --- */
+
+/*
+* {
+  border: 1px solid black;
+}
+*/
+
+/* --- Main --- */
+
+html, body {
+  position: relative;
+  margin: 0px;
+  padding: 0px;
+}
+
+#main {
+  margin-top: 50px;
+  padding: 15px;
+}
+
+/* --- Navbar --- */
+
+nav {
+  background-color: #555555;
+  position: fixed;
+  width: 100%;
+  z-index: 1;  
+  top: 0px;
+}
+
+nav ul {
+  padding-left: 0px; /* Justify to the left of the navbar */
+  display: inline;
+  line-height: 50px;
+}
+
+nav li {
+  display: inline-block;
+  position: relative;
+}
+
+nav a {
+  color: #ffffff;
+  text-decoration: none;
+  padding: 8px 18px;
+  font-weight: bolder;
+}
+
+nav a:hover {
+  color: #8e8e8e;
+}
+
+/* --- Content --- */
+
+table, th, td {
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 15px;
+}
