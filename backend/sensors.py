@@ -17,6 +17,8 @@ PIR Condition:
 
 - If using external battery, create a separate script to run at boot that monitors battery voltage and creates alert (text/email?) on low battery using a voltage sensor on a gpio pin
 
+- Take still shot w/ camera in bash: raspistill -o cam.jpg
+
 '''
 
 
