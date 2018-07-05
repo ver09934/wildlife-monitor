@@ -50,11 +50,11 @@ while True:
 		cmd = "raspistill -o ~/Pictures/test" + str(picCount) + ".jpg" # TODO: Can this be run as a background task so we don't have to wait for it?
 		print(cmd)
 
-		# subprocess.Popen(cmd)
+		subprocess.Popen(cmd, shell=True)
 
 		# subprocess.check_output(['bash','-c', cmd])
 
-		subprocess.check_output(cmd, shell=True)
+		# subprocess.check_output(cmd, shell=True)
 
 		picCount += 1
 
