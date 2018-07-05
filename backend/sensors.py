@@ -32,18 +32,33 @@ TODO:
 import RPi.GPIO as GPIO
 import time
 import subprocess
+from picamera import PiCamera
+
+camera = PiCamera()
+
+'''
+camera.start_recording('/home/pi/video2.h264')
+time.sleep(5)
+camera.stop_recording()
+
+convert to mp4 for embedding on website:
+- https://raspi.tv/2013/another-way-to-convert-raspberry-pi-camera-h264-output-to-mp4
+- https://www.raspberrypi.org/forums/viewtopic.php?t=98541
+- https://raspberrypi.stackexchange.com/questions/69620/python-3-auto-conversion-from-h264-to-mp4
+- https://www.raspberrypi-spy.co.uk/2013/05/capturing-hd-video-with-the-pi-camera-module/
+'''
 
 # Set initial sensor state
 state=False
 if GPIO.input(17):
 	state=True
 
-# TODO: Figure out how to gracefully exit this loop externally to un 
+# TODO: Figure out how to gracefully exit this loop externally to run GPIO.cleanup() (see note in todo)
 while True:
 
 	# If state changes from low to high
 	if state == False and GPIO.input(17):
-    
+
 		state=True
 		print("State changed to high")
 
@@ -60,7 +75,7 @@ while True:
 
 	# If state changes from high to low
 	if state == True and (not GPIO.input(17)):
-    
+
 		state=False
 		print("State changed to low")
 
