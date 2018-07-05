@@ -19,6 +19,11 @@ PIR Condition:
 
 - Take still shot w/ camera in bash: raspistill -o cam.jpg
 
+PINOUT:
+- PIR Sensor connected to GND, +5V, and Pin (TODO) (regulates 5V power to a 3.3V logic level for the signal)
+- Barometric pressure sensor connected to (TODO)
+- Raspi camera module connected to the camera connector slot
+
 '''
 
 
