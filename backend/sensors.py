@@ -14,17 +14,12 @@ PIR Condition:
 - TODO: Improve this filtering system
 
 PINOUT:
-- PIR Sensor connected to GND, +5V, and Pin (TODO) (regulates 5V power to a 3.3V logic level for the signal)
-- Barometric pressure sensor connected to (TODO)
+- PIR Sensor (with retriggering enabled) connected to GND, +5V, and Signal to BCM 17 (it regulates 5V power to a 3.3V logic level for the signal)
+- Barometric pressure sensor connected to +3.3V (or +5V), GND, BCM 2 (SDA - I2C Data), and BCM 3 (SCL - I2C Clock)
 - Raspi camera module connected to the camera connector slot
-
-Notes:
-- To make a python script executable: put "#!/usr/bin/env python" (no quotes) at the top, and of course, run chmod +x filename.py
-- Take still shot w/ camera in bash: raspistill -o cam.jpg
-- If using external battery, create a separate script to run at boot that monitors battery voltage and creates alert (text/email?) on low battery using a voltage sensor on a gpio pin
+- (Optional) Motion indicator LED connected to GND and BCM 4 with a 100 ohm resistor 
 
 TODO:
-- Baro reading with I2C
 - Check at end of loop: If ~/.sensors-running contains 0 instead of 1 (writes 1 at startup), then break main loop and run GPIO.cleanup()
 
 '''
@@ -33,55 +28,71 @@ import RPi.GPIO as GPIO
 import time
 import subprocess
 from picamera import PiCamera
+import smbus
 
-camera = PiCamera()
+dataDir = "~/wildlife_videos/" # Needs '/' at the end
+pirPin = 17
+ledPin = 4
 
-'''
-camera.start_recording('/home/pi/video2.h264')
-time.sleep(5)
-camera.stop_recording()
+def mkdir(pathIn):
+    if not os.path.exists(pathIn):
+        print('Directory exists: ' + os.path.abspath(pathIn))
+    else:
+		try:
+			os.mkdir(pathIn)
+			print('Created directory: ' + os.path.abspath(pathIn))
+		except:
+			print('Could not create directory: ' + pathIn)
 
-convert to mp4 for embedding on website:
-- https://raspi.tv/2013/another-way-to-convert-raspberry-pi-camera-h264-output-to-mp4
-- https://www.raspberrypi.org/forums/viewtopic.php?t=98541
-- https://raspberrypi.stackexchange.com/questions/69620/python-3-auto-conversion-from-h264-to-mp4
-- https://www.raspberrypi-spy.co.uk/2013/05/capturing-hd-video-with-the-pi-camera-module/
-'''
+def setup():
+	
+	# Create camera object (needs to be accessible from main method)
+	global camera = PiCamera()
+	
+	# Count number of videos recorded
+	# Alternatively, timestamp the video names
+	global vidCount = 1
 
-# Set initial sensor state
-state=False
-if GPIO.input(17):
-	state=True
+	# Setup GPIO pins
+	GPIO.setmode(GPIO.BCM)
+	GPIO.setup(pirPin, GPIO.IN)
+	GPIO.setup(ledPin, GPIO.OUT)
+	
+	# Setup I2C bus (TODO)
+	
+	# Create data directory
+	mkdir(dataDir)
+	
+def main():
+	
+	setup()
+	
+	# Set initial motion state
+	motionDetected = False
+	
+	while True:
 
-# TODO: Figure out how to gracefully exit this loop externally to run GPIO.cleanup() (see note in todo)
-while True:
+		# --- If state changes from low to high ---
+		if motionDetected == False and GPIO.input(pirPin):
+			
+			motionDetected = True
+			print("State changed to high")
+			GPIO.output(ledPin, GPIO.HIGH)
+			camera.start_recording(dataDir + 'video_capture_' + str(vidCount) + '.')
+			vidCount += 1
 
-	# If state changes from low to high
-	if state == False and GPIO.input(17):
+		# --- If state changes from high to low ---
+		if motionDetected == True and (not GPIO.input(pirPin)):
+			
+			motionDetected = False
+			print("State changed to low")
+			GPIO.output(ledPin, GPIO.LOW)
+			camera.stop_recording()
+			# TODO: Start backgroun task to convert h264 stream to mp4
 
-		state=True
-		print("State changed to high")
+		time.sleep(0.01) # Looptime if no sensor activity
+		
+	# if we break from the loop... somehow
+	GPIO.cleanup()
 
-		cmd = "raspistill -o ~/Pictures/test" + str(picCount) + ".jpg" # TODO: Can this be run as a background task so we don't have to wait for it?
-		print(cmd)
-
-		subprocess.Popen(cmd, shell=True)
-
-		# subprocess.check_output(['bash','-c', cmd])
-
-		# subprocess.check_output(cmd, shell=True)
-
-		picCount += 1
-
-	# If state changes from high to low
-	if state == True and (not GPIO.input(17)):
-
-		state=False
-		print("State changed to low")
-
-	# Looptime (time between PIR reads) assuming no sensor activity
-	time.sleep(0.1)
-
-
-
-
+main()
