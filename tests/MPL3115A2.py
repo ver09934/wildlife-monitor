@@ -1,60 +1,132 @@
-# Distributed with a free-will license.
-# Use it any way you want, profit or free, provided it fits in the licenses of its associated works.
-# MPL3115A2
-# This code is designed to work with the MPL3115A2_I2CS I2C Mini Module available from ControlEverything.com.
-# https://www.controleverything.com/products
+from smbus import SMBus
+from sys import exit
 
-import smbus
-import time
+#I2C ADDRESS/BITS
 
-# Get I2C bus
-bus = smbus.SMBus(1)
+MPL3115A2_ADDRESS = (0x60)
 
-# MPL3115A2 address, 0x60(96)
-# Select control register, 0x26(38)
-#		0xB9(185)	Active mode, OSR = 128, Altimeter mode
-bus.write_byte_data(0x60, 0x26, 0xB9)
-# MPL3115A2 address, 0x60(96)
-# Select data configuration register, 0x13(19)
-#		0x07(07)	Data ready event enabled for altitude, pressure, temperature
-bus.write_byte_data(0x60, 0x13, 0x07)
-# MPL3115A2 address, 0x60(96)
-# Select control register, 0x26(38)
-#		0xB9(185)	Active mode, OSR = 128, Altimeter mode
-bus.write_byte_data(0x60, 0x26, 0xB9)
+#REGISTERS
 
-time.sleep(1)
+MPL3115A2_REGISTER_STATUS = (0x00)
+MPL3115A2_REGISTER_STATUS_TDR = 0x02
+MPL3115A2_REGISTER_STATUS_PDR = 0x04
+MPL3115A2_REGISTER_STATUS_PTDR = 0x08
 
-# MPL3115A2 address, 0x60(96)
-# Read data back from 0x00(00), 6 bytes
-# status, tHeight MSB1, tHeight MSB, tHeight LSB, temp MSB, temp LSB
-data = bus.read_i2c_block_data(0x60, 0x00, 6)
+MPL3115A2_REGISTER_PRESSURE_MSB = (0x01)
+MPL3115A2_REGISTER_PRESSURE_CSB = (0x02)
+MPL3115A2_REGISTER_PRESSURE_LSB = (0x03)
 
-# Convert the data to 20-bits
-tHeight = ((data[1] * 65536) + (data[2] * 256) + (data[3] & 0xF0)) / 16
-temp = ((data[4] * 256) + (data[5] & 0xF0)) / 16
-altitude = tHeight / 16.0
-cTemp = temp / 16.0
-fTemp = cTemp * 1.8 + 32
+MPL3115A2_REGISTER_TEMP_MSB = (0x04)
+MPL3115A2_REGISTER_TEMP_LSB = (0x05)
 
-# MPL3115A2 address, 0x60(96)
-# Select control register, 0x26(38)
-#		0x39(57)	Active mode, OSR = 128, Barometer mode
-bus.write_byte_data(0x60, 0x26, 0x39)
+MPL3115A2_REGISTER_DR_STATUS = (0x06)
 
-time.sleep(1)
+MPL3115A2_OUT_P_DELTA_MSB = (0x07)
+MPL3115A2_OUT_P_DELTA_CSB = (0x08)
+MPL3115A2_OUT_P_DELTA_LSB = (0x09)
 
-# MPL3115A2 address, 0x60(96)
-# Read data back from 0x00(00), 4 bytes
-# status, pres MSB1, pres MSB, pres LSB
-data = bus.read_i2c_block_data(0x60, 0x00, 4)
+MPL3115A2_OUT_T_DELTA_MSB = (0x0A)
+MPL3115A2_OUT_T_DELTA_LSB = (0x0B)
 
-# Convert the data to 20-bits
-pres = ((data[1] * 65536) + (data[2] * 256) + (data[3] & 0xF0)) / 16
-pressure = (pres / 4.0) / 1000.0
+MPL3115A2_BAR_IN_MSB = (0x14)
 
-# Output data to screen
-print "Pressure : %.2f kPa" %pressure
-print "Altitude : %.2f m" %altitude
-print "Temperature in Celsius  : %.2f C" %cTemp
-print "Temperature in Fahrenheit  : %.2f F" %fTemp
+MPL3115A2_WHOAMI = (0x0C)
+
+#BITS
+
+MPL3115A2_PT_DATA_CFG = 0x13
+MPL3115A2_PT_DATA_CFG_TDEFE = 0x01
+MPL3115A2_PT_DATA_CFG_PDEFE = 0x02
+MPL3115A2_PT_DATA_CFG_DREM = 0x04
+
+MPL3115A2_CTRL_REG1 = (0x26)
+MPL3115A2_CTRL_REG1_SBYB = 0x01
+MPL3115A2_CTRL_REG1_OST = 0x02
+MPL3115A2_CTRL_REG1_RST = 0x04
+MPL3115A2_CTRL_REG1_OS1 = 0x00
+MPL3115A2_CTRL_REG1_OS2 = 0x08
+MPL3115A2_CTRL_REG1_OS4 = 0x10
+MPL3115A2_CTRL_REG1_OS8 = 0x18
+MPL3115A2_CTRL_REG1_OS16 = 0x20
+MPL3115A2_CTRL_REG1_OS32 = 0x28
+MPL3115A2_CTRL_REG1_OS64 = 0x30
+MPL3115A2_CTRL_REG1_OS128 = 0x38
+MPL3115A2_CTRL_REG1_RAW = 0x40
+MPL3115A2_CTRL_REG1_ALT = 0x80
+MPL3115A2_CTRL_REG1_BAR = 0x00
+MPL3115A2_CTRL_REG2 = (0x27)
+MPL3115A2_CTRL_REG3 = (0x28)
+MPL3115A2_CTRL_REG4 = (0x29)
+MPL3115A2_CTRL_REG5 = (0x2A)
+
+MPL3115A2_REGISTER_STARTCONVERSION = (0x12)
+
+
+bus = SMBus(1)
+
+whoami = bus.read_byte_data(MPL3115A2_ADDRESS, MPL3115A2_WHOAMI)
+if whoami != 0xc4:
+    print "Device not active."
+    exit(1)
+
+bus.write_byte_data(
+    MPL3115A2_ADDRESS,
+    MPL3115A2_CTRL_REG1,
+    MPL3115A2_CTRL_REG1_SBYB |
+    MPL3115A2_CTRL_REG1_OS128 |
+    MPL3115A2_CTRL_REG1_ALT)
+
+bus.write_byte_data(
+    MPL3115A2_ADDRESS,
+    MPL3115A2_PT_DATA_CFG, 
+    MPL3115A2_PT_DATA_CFG_TDEFE |
+    MPL3115A2_PT_DATA_CFG_PDEFE |
+    MPL3115A2_PT_DATA_CFG_DREM)
+
+def poll():
+    sta = 0
+    while not (sta & MPL3115A2_REGISTER_STATUS_PDR):
+        sta = bus.read_byte_data(MPL3115A2_ADDRESS, MPL3115A2_REGISTER_STATUS)
+
+
+def altitude():
+    bus.write_byte_data(
+        MPL3115A2_ADDRESS,
+        MPL3115A2_CTRL_REG1, 
+        MPL3115A2_CTRL_REG1_SBYB |
+        MPL3115A2_CTRL_REG1_OS128 |
+        MPL3115A2_CTRL_REG1_ALT)
+
+    poll()
+    
+    msb, csb, lsb = bus.read_i2c_block_data(MPL3115A2_ADDRESS,MPL3115A2_REGISTER_PRESSURE_MSB,3)
+    print msb, csb, lsb
+
+    alt = ((msb<<24) | (csb<<16) | (lsb<<8)) / 65536.
+
+    # correct sign
+    if alt > (1<<15):
+        alt -= 1<<16
+
+    return alt
+
+
+def pressure():
+    bus.write_byte_data(
+        MPL3115A2_ADDRESS,
+        MPL3115A2_CTRL_REG1, 
+        MPL3115A2_CTRL_REG1_SBYB |
+	    MPL3115A2_CTRL_REG1_OS128 |
+	    MPL3115A2_CTRL_REG1_BAR)
+
+    poll()
+    
+    msb, csb, lsb = bus.read_i2c_block_data(MPL3115A2_ADDRESS,MPL3115A2_REGISTER_PRESSURE_MSB,3)
+    print msb, csb, lsb
+
+    return ((msb<<16) | (csb<<8) | lsb) / 64.
+
+def calibrate():
+    pa = int(pressure()/2)
+    bus.write_i2c_block_data(MPL3115A2_ADDRESS, MPL3115A2_BAR_IN_MSB, [pa>>8 & 0xff, pa & 0xff])
+
