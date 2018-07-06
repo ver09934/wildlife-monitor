@@ -1,4 +1,7 @@
 # .gitignore for wildlife monitor
 
+# compiled python files
+*.pyc
+
 # nano/vim backup files
 *.sw*
