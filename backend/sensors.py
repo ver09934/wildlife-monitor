@@ -41,9 +41,9 @@ PIR_PIN = 17
 LED_PIN = 4
 
 def mkdir(pathIn):
-    if not os.path.exists(pathIn):
-        print("Directory exists: " + os.path.abspath(pathIn))
-    else:
+	if not os.path.exists(pathIn):
+		print("Directory exists: " + os.path.abspath(pathIn))
+	else:
 		try:
 			os.mkdir(pathIn)
 			print("Created directory: " + os.path.abspath(pathIn))
