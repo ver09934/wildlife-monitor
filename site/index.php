@@ -33,6 +33,21 @@
       
       <h2>Debug</h2>
       <p>This is placeholder text.</p>
+      
+      <?php
+      
+        $path = '/home/pi/wildlife-files/';
+        
+        $files = array_diff(scandir($path), array('.', '..'));
+        
+        foreach($files as $item) {
+          // echo $item['filename'];
+          // echo $item['filepath'];
+          echo '<pre><a href="' . $path . $item . '">' . $path . $item . '</a></pre>' . "\n";
+          //echo '<pre>'; var_dump($item);
+        }
+        
+      ?>
 
     </div>
   </body>
