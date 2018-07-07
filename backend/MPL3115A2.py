@@ -64,7 +64,7 @@ if (setting & MPL3115A2_CTRL_REG1_OST) == 0:
 status = bus.read_byte_data(MPL3115A2_ADDRESS, MPL3115A2_REGISTER_STATUS)
 while (status & MPL3115A2_REGISTER_STATUS_PTDR) == 0:
     status = bus.read_byte_data(MPL3115A2_ADDRESS, MPL3115A2_REGISTER_STATUS)
-    time.sleep(0.5)
+    time.sleep(0.005)
 
 # Read sensor data
 p_data = bus.read_i2c_block_data(MPL3115A2_ADDRESS, MPL3115A2_REGISTER_PRESSURE_MSB, 3) # Shorter = p_msb, p_csb, p_lsb = bus.read_i2c_block_data(...)
