@@ -20,7 +20,6 @@ PINOUT:
 - (Optional) Motion indicator LED connected to GND and BCM 4 with a 100 ohm resistor 
 
 TODO:
-- Check at end of loop: If ~/.sensors-running contains 0 instead of 1 (writes 1 at startup), then break main loop and run GPIO.cleanup(), or come up with some other way to cleanl break from the main loop
 - Decide if the data file should be created when motion is detectd and filled with instantaneous data, or if the file should be created when the motion is stopped, and filled wih averaged data over the period of motion... (simpler is better, for now - multithreading can come later)
 - To convert vars to strings, use str(var)
 - May have separate directories for the data and videos, or else a separate dir for each instance, each containing one video and file... whatever makes the php easier, unil I can learn SQL
@@ -84,22 +83,27 @@ def main():
 
 		# --- If state changes from low to high ---
 		if motionDetected == False and GPIO.input(PIR_PIN):
+			
+			global triggerCount
+			triggerCount += 1
+			
+			motionDetected = True
+			print("State changed to high")
+			GPIO.output(LED_PIN, GPIO.HIGH)
+			
+			baroData = baro.getData()
 
+			data = {}
+			data['time'] = time.strftime('%m/%d/%Y %H:%M:%S %Z')
+			data['pressure'] = baroData[0]
+			data['temperature'] = baroData[1]
+			
 			timeString = time.strftime('%Y-%m-%d-%H-%M-%S')
 			videoPath = DATA_DIR + 'video_' + timeString + '.h264'
 			dataPath = DATA_DIR + 'data_' + timeString + '.json'
 
-			motionDetected = True
-			print("State changed to high")
-			GPIO.output(LED_PIN, GPIO.HIGH)
-
 			global camera
 			camera.start_recording(videoPath)
-
-			global triggerCount
-			triggerCount += 1
-
-			baroData = baro.getData()
 
 			data = {}
 			data['time'] = time.strftime('%m/%d/%Y %H:%M:%S %Z')
@@ -124,10 +128,12 @@ def main():
 			global camera
 			camera.stop_recording()
 
-			# cmd="bash videoconvert.sh " + DATA_DIR
-			# subprocess.Popen(cmd, shell=True)
+			cmd="bash videoconvert.sh " + DATA_DIR
+			subprocess.Popen(cmd, shell=True)
 
-		time.sleep(0.01)
+		# --- Looptime if no sensor activity ---
+		else
+			time.sleep(0.005)
 
 def exit_handler():
 	print("Exiting (somewhat) gracefully...")
@@ -135,6 +141,8 @@ def exit_handler():
 		GPIO.output(LED_PIN, GPIO.LOW)
 		global camera
 		camera.stop_recording()
+		cmd="bash videoconvert.sh " + DATA_DIR
+		subprocess.Popen(cmd, shell=True)
 	GPIO.cleanup()
 
 main()

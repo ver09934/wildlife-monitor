@@ -9,6 +9,6 @@ for j in $(ls *.h264)
 do
 	filename=${j%.*}
 	filename=$filename.mp4
-	MP4Box -add $j $filename
+	MP4Box -add $j $filename &> /dev/null # Essential to run quickly when called from python script
 	rm $j
 done
