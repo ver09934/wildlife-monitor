@@ -33,6 +33,7 @@ import time
 import subprocess
 from picamera import PiCamera
 import smbus
+import json
 
 DATA_DIR = '~/wildlife_files/' # Needs '/' at the end
 PIR_PIN = 17
@@ -84,22 +85,32 @@ def main():
 			
 			timeString = time.strftime('%Y-%m-%d-%H-%M-%S')
 			videoPath = dataDir + 'video_' + timeString + '.h264'
-			dataPath = dataDir + 'data_' + timeString + '.txt' # TODO: Which format to use? JSON, XML, etc.
+			dataPath = dataDir + 'data_' + timeString + '.json'
 			
 			motionDetected = True
 			print("State changed to high")
 			GPIO.output(LED_PIN, GPIO.HIGH)
-			camera.start_recording(dataDir + 'video_' + time + '.h264')
+			camera.start_recording(videoPath)
 			triggerCount += 1
 			
+			# baroData = 
+			
+			data = {}
+			data['time'] = time.strftime('%m/%d/%Y %H:%M:%S %Z')
+			data['pressure'] = '2'
+			data['temperature'] = '3'
+			
 			try:
-				with open(dataPath, 'w+') as f:
-					f.write("TODO: Write time and baro data to file, instead of this string!") # TODO: Which format to use? JSON, XML, etc. - can PHP parse JSON?
+				with open(dataPath, 'w+') as f: # f = open(dataPath, 'w+')
+					json.dump(data, f, ensure_ascii=False, indent=2)
+					f.write('\n')
+					f.close()
 			except:
 				print("Could not create file: " + dataPath)
 			
-			# TODO: create a data file called data
-
+			
+			
+			
 		# --- If state changes from high to low ---
 		if motionDetected == True and (not GPIO.input(PIR_PIN)):
 			
