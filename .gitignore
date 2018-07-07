@@ -2,6 +2,7 @@
 
 # compiled python files
 *.pyc
+__pycache__
 
 # nano/vim backup files
 *.sw*
