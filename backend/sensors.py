@@ -30,12 +30,13 @@ TODO:
 
 import RPi.GPIO as GPIO
 import time
-#import subprocess
+import subprocess
 import os
 from picamera import PiCamera
 import smbus
 import json
 import MPL3115A2 as baro
+import atexit # For exit handling
 
 DATA_DIR = '/home/pi/wildlife-files/' # Needs '/' at the end, and '~/wildlife-files' didn't work...
 PIR_PIN = 17
@@ -69,6 +70,8 @@ def setup():
 
 	# Create data directory
 	mkdir(DATA_DIR)
+	
+	atexit.register(exit_handler)
 
 def main():
 
@@ -121,14 +124,17 @@ def main():
 			global camera
 			camera.stop_recording()
 
-			# TODO: Start thread to convert h264 stream to mp4 (likely calling a bash script)
+			# cmd="bash videoconvert.sh " + DATA_DIR
+			# subprocess.Popen(cmd, shell=True)
 
-		time.sleep(0.01) # Looptime if no sensor activity
+		time.sleep(0.01)
 
-	# if we break from the loop... somehow
+def exit_handler():
+	print("Exiting (somewhat) gracefully...")
+	if motionDetected == True and (not GPIO.input(PIR_PIN)):
+		GPIO.output(LED_PIN, GPIO.LOW)
+		global camera
+		camera.stop_recording()
 	GPIO.cleanup()
-
-
-
 
 main()
