@@ -36,7 +36,7 @@
       
       <?php
       
-        $path = '/home/pi/wildlife-files/';
+        $path = 'data/';
         
         $files = array_diff(scandir($path), array('.', '..'));
         

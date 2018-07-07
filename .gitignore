@@ -1,7 +1,8 @@
 # .gitignore for wildlife monitor
 
-# data directory
+# data directories
 /data
+/site/data
 
 # compiled python files
 *.pyc
