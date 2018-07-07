@@ -1,7 +1,6 @@
 from smbus import SMBus
 import time
 
-
 # I2C Values
 MPL3115A2_ADDRESS = 0x60
 MPL3115A2_WHOAMI = 0x0C
@@ -84,6 +83,6 @@ pressure = p_integer + p_fractional
 
 celsius = t_msb + ( (t_lsb >> 4) / 16.0 ) # Add integer part (in t_msb), and the fractional part (bits 7 through 4), shifted down 4 to get rid of extra zero digits
 
-print("Pressure and Temperature at " + time.strftime('%m/%d/%Y %H:%M:%S%z'))
-print(str(pressure) + " Pa")
-print(str(celsius) + " C")
+print("Time: " + time.strftime('%m/%d/%Y %H:%M:%S%z'))
+print("Pressure: " + str(pressure) + " Pa")
+print("Temperature: " + str(celsius) + " C")
