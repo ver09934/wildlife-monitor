@@ -62,6 +62,10 @@ def setup():
 	global triggerCount
 	triggerCount = 1
 
+	# Whether motion is detected - set inition motion state
+	global motionDetected
+	motionDetected = False
+
 	# Setup GPIO pins
 	GPIO.setmode(GPIO.BCM)
 	GPIO.setup(PIR_PIN, GPIO.IN)
@@ -69,40 +73,43 @@ def setup():
 
 	# Create data directory
 	mkdir(DATA_DIR)
-	
+
+	# Register exit handler method
 	atexit.register(exit_handler)
 
 def main():
 
 	setup()
 
-	# Set initial motion state
-	motionDetected = False
+	# Global declarations
+	global triggerCount
+	global camera
+	global motionDetected
+
+	print("Started polling sensor...")
 
 	while True:
 
 		# --- If state changes from low to high ---
 		if motionDetected == False and GPIO.input(PIR_PIN):
-			
-			global triggerCount
+
 			triggerCount += 1
-			
+
 			motionDetected = True
 			print("State changed to high")
 			GPIO.output(LED_PIN, GPIO.HIGH)
-			
+
 			baroData = baro.getData()
 
 			data = {}
 			data['time'] = time.strftime('%m/%d/%Y %H:%M:%S %Z')
 			data['pressure'] = baroData[0]
 			data['temperature'] = baroData[1]
-			
+
 			timeString = time.strftime('%Y-%m-%d-%H-%M-%S')
 			videoPath = DATA_DIR + 'video_' + timeString + '.h264'
 			dataPath = DATA_DIR + 'data_' + timeString + '.json'
 
-			global camera
 			camera.start_recording(videoPath)
 
 			data = {}
@@ -125,19 +132,19 @@ def main():
 			print("State changed to low")
 			GPIO.output(LED_PIN, GPIO.LOW)
 
-			global camera
 			camera.stop_recording()
 
 			cmd="bash videoconvert.sh " + DATA_DIR
 			subprocess.Popen(cmd, shell=True)
 
 		# --- Looptime if no sensor activity ---
-		else
+		else:
 			time.sleep(0.005)
 
 def exit_handler():
 	print("Exiting (somewhat) gracefully...")
 	if motionDetected == True and (not GPIO.input(PIR_PIN)):
+		print("Doing cleanup...")
 		GPIO.output(LED_PIN, GPIO.LOW)
 		global camera
 		camera.stop_recording()
