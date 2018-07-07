@@ -37,7 +37,7 @@ import json
 import MPL3115A2 as baro
 import atexit # For exit handling
 
-DATA_DIR = '/home/pi/wildlife-files/' # Needs '/' at the end, and '~/wildlife-files' didn't work...
+DATA_DIR = '../data/' # Needs '/' at the end
 PIR_PIN = 17
 LED_PIN = 4
 
