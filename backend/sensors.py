@@ -30,18 +30,19 @@ TODO:
 
 import RPi.GPIO as GPIO
 import time
-import subprocess
+#import subprocess
+import os
 from picamera import PiCamera
 import smbus
 import json
 import MPL3115A2 as baro
 
-DATA_DIR = '~/wildlife_files/' # Needs '/' at the end
+DATA_DIR = '/home/pi/wildlife-files/' # Needs '/' at the end, and '~/wildlife-files' didn't work...
 PIR_PIN = 17
 LED_PIN = 4
 
 def mkdir(pathIn):
-	if not os.path.exists(pathIn):
+	if os.path.exists(pathIn):
 		print("Directory exists: " + os.path.abspath(pathIn))
 	else:
 		try:
@@ -52,55 +53,56 @@ def mkdir(pathIn):
 			print("Could not create directory: " + pathIn)
 
 def setup():
-	
+
 	# Create camera object (needs to be accessible from main method)
 	global camera
 	camera = PiCamera()
-	
-	# Count number of videos recorded
-	# Alternatively, timestamp the video names
+
+	# Count number of times the PIR has triggered to high
 	global triggerCount
 	triggerCount = 1
 
 	# Setup GPIO pins
 	GPIO.setmode(GPIO.BCM)
-	GPIO.setup(pirPin, GPIO.IN)
-	GPIO.setup(ledPin, GPIO.OUT)
-	
-	# Setup I2C bus (TODO)
-	
+	GPIO.setup(PIR_PIN, GPIO.IN)
+	GPIO.setup(LED_PIN, GPIO.OUT)
+
 	# Create data directory
 	mkdir(DATA_DIR)
-	
+
 def main():
-	
+
 	setup()
-	
+
 	# Set initial motion state
 	motionDetected = False
-	
+
 	while True:
 
 		# --- If state changes from low to high ---
 		if motionDetected == False and GPIO.input(PIR_PIN):
-			
+
+			timeString = time.strftime('%Y-%m-%d-%H-%M-%S')
+			videoPath = DATA_DIR + 'video_' + timeString + '.h264'
+			dataPath = DATA_DIR + 'data_' + timeString + '.json'
+
 			motionDetected = True
 			print("State changed to high")
 			GPIO.output(LED_PIN, GPIO.HIGH)
+
+			global camera
 			camera.start_recording(videoPath)
+
+			global triggerCount
 			triggerCount += 1
 
-			timeString = time.strftime('%Y-%m-%d-%H-%M-%S')
-			videoPath = dataDir + 'video_' + timeString + '.h264'
-			dataPath = dataDir + 'data_' + timeString + '.json'
-			
-			baroData = baro.getData() 
-			
+			baroData = baro.getData()
+
 			data = {}
 			data['time'] = time.strftime('%m/%d/%Y %H:%M:%S %Z')
 			data['pressure'] = baroData[0]
 			data['temperature'] = baroData[1]
-			
+
 			try:
 				with open(dataPath, 'w+') as f: # f = open(dataPath, 'w+')
 					json.dump(data, f, ensure_ascii=False, indent=2)
@@ -108,19 +110,21 @@ def main():
 					f.close()
 			except:
 				print("Could not create file: " + dataPath)
-			
+
 		# --- If state changes from high to low ---
 		if motionDetected == True and (not GPIO.input(PIR_PIN)):
-			
+
 			motionDetected = False
 			print("State changed to low")
 			GPIO.output(LED_PIN, GPIO.LOW)
+
+			global camera
 			camera.stop_recording()
-			
+
 			# TODO: Start thread to convert h264 stream to mp4 (likely calling a bash script)
 
 		time.sleep(0.01) # Looptime if no sensor activity
-		
+
 	# if we break from the loop... somehow
 	GPIO.cleanup()
 
