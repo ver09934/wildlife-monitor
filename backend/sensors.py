@@ -20,7 +20,11 @@ PINOUT:
 - (Optional) Motion indicator LED connected to GND and BCM 4 with a 100 ohm resistor 
 
 TODO:
-- Check at end of loop: If ~/.sensors-running contains 0 instead of 1 (writes 1 at startup), then break main loop and run GPIO.cleanup()
+- Check at end of loop: If ~/.sensors-running contains 0 instead of 1 (writes 1 at startup), then break main loop and run GPIO.cleanup(), or come up with some other way to cleanl break from the main loop
+- Decide if the data file should be created when motion is detectd and filled with instantaneous data, or if the file should be created when the motion is stopped, and filled wih averaged data over the period of motion... (simpler is better, for now - multithreading can come later)
+- To convert vars to strings, use str(var)
+- May have separate directories for the data and videos, or else a separate dir for each instance, each containing one video and file... whatever makes the php easier, unil I can learn SQL
+- Test importing the MPL file and create methods to call (setup on import, with data method, and the potential to re-call the setup method)
 
 '''
 
@@ -30,28 +34,31 @@ import subprocess
 from picamera import PiCamera
 import smbus
 
-dataDir = "~/wildlife_videos/" # Needs '/' at the end
-pirPin = 17
-ledPin = 4
+DATA_DIR = '~/wildlife_files/' # Needs '/' at the end
+PIR_PIN = 17
+LED_PIN = 4
 
 def mkdir(pathIn):
     if not os.path.exists(pathIn):
-        print('Directory exists: ' + os.path.abspath(pathIn))
+        print("Directory exists: " + os.path.abspath(pathIn))
     else:
 		try:
 			os.mkdir(pathIn)
-			print('Created directory: ' + os.path.abspath(pathIn))
+			print("Created directory: " + os.path.abspath(pathIn))
+		# except Exception as e: print(e)
 		except:
-			print('Could not create directory: ' + pathIn)
+			print("Could not create directory: " + pathIn)
 
 def setup():
 	
 	# Create camera object (needs to be accessible from main method)
-	global camera = PiCamera()
+	global camera
+	camera = PiCamera()
 	
 	# Count number of videos recorded
 	# Alternatively, timestamp the video names
-	global vidCount = 1
+	global triggerCount
+	triggerCount = 1
 
 	# Setup GPIO pins
 	GPIO.setmode(GPIO.BCM)
@@ -61,7 +68,7 @@ def setup():
 	# Setup I2C bus (TODO)
 	
 	# Create data directory
-	mkdir(dataDir)
+	mkdir(DATA_DIR)
 	
 def main():
 	
@@ -73,26 +80,42 @@ def main():
 	while True:
 
 		# --- If state changes from low to high ---
-		if motionDetected == False and GPIO.input(pirPin):
+		if motionDetected == False and GPIO.input(PIR_PIN):
+			
+			timeString = time.strftime('%Y-%m-%d-%H-%M-%S')
+			videoPath = dataDir + 'video_' + timeString + '.h264'
+			dataPath = dataDir + 'data_' + timeString + '.txt' # TODO: Which format to use? JSON, XML, etc.
 			
 			motionDetected = True
 			print("State changed to high")
-			GPIO.output(ledPin, GPIO.HIGH)
-			camera.start_recording(dataDir + 'video_capture_' + str(vidCount) + '.')
-			vidCount += 1
+			GPIO.output(LED_PIN, GPIO.HIGH)
+			camera.start_recording(dataDir + 'video_' + time + '.h264')
+			triggerCount += 1
+			
+			try:
+				with open(dataPath, 'w+') as f:
+					f.write("TODO: Write time and baro data to file, instead of this string!") # TODO: Which format to use? JSON, XML, etc. - can PHP parse JSON?
+			except:
+				print("Could not create file: " + dataPath)
+			
+			# TODO: create a data file called data
 
 		# --- If state changes from high to low ---
-		if motionDetected == True and (not GPIO.input(pirPin)):
+		if motionDetected == True and (not GPIO.input(PIR_PIN)):
 			
 			motionDetected = False
 			print("State changed to low")
-			GPIO.output(ledPin, GPIO.LOW)
+			GPIO.output(LED_PIN, GPIO.LOW)
 			camera.stop_recording()
-			# TODO: Start backgroun task to convert h264 stream to mp4
+			
+			# TODO: Start thread to convert h264 stream to mp4 (likely calling a bash script)
 
 		time.sleep(0.01) # Looptime if no sensor activity
 		
 	# if we break from the loop... somehow
 	GPIO.cleanup()
+
+
+
 
 main()
