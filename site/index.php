@@ -40,7 +40,7 @@
             
             if ($ext == "mp4") {
               array_push($mp4files, $item);
-            } else {
+            } elseif ($ext == "json") {
               array_push($jsonfiles, $item);
             }
                       
