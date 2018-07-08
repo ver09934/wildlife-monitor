@@ -62,7 +62,7 @@
           for ($x = 0; $x < count($jsonfiles); $x++) {
             echo '<tr>';
             
-            echo '<td>' . strval($x + 1) . '</td>';
+            echo '<td>' . strval(count($jsonfiles) - $x) . '</td>';
             
             if ($mp4files[$x] == "File currently unavailable") {
               echo '<td>' . '<pre>' . $mp4files[$x] . '</pre>' . '</td>';
