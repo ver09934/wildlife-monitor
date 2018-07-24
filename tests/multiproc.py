@@ -8,7 +8,7 @@ import time
 
 # Define an output queue
 output = mp.Queue()
-   
+
 def odds():
     val = 1
     while True:
