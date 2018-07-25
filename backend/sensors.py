@@ -112,11 +112,6 @@ def main():
 
 			camera.start_recording(videoPath)
 
-			data = {}
-			data['time'] = time.strftime('%m/%d/%Y %H:%M:%S %Z')
-			data['pressure'] = baroData[0]
-			data['temperature'] = baroData[1]
-
 			try:
 				with open(dataPath, 'w+') as f: # f = open(dataPath, 'w+')
 					json.dump(data, f, ensure_ascii=False, indent=2)
