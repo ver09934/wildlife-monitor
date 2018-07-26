@@ -41,6 +41,10 @@ def main():
     # Create data directory
     mkdir(DATA_DIR)
     
+    # Register exit handler method
+    atexit.register(exit_handler, camera)
+    # atexit.register(goodbye, 'Donny', 'nice') # Can pass args when registering...
+    
     # motion events
     motionStart = threading.Event()
     motionEnd = threading.Event()
@@ -49,15 +53,11 @@ def main():
     threads = []
     threads.append(threading.Thread(target = motionThread, args=(motionStart, motionEnd)))
     threads.append(threading.Thread(target = cameraRecordThread, args=(camera, motionStart, motionEnd)))
-    # threads.append(threading.Thread(target = dataThread))
+    threads.append(threading.Thread(target = dataThread, args=(motionStart)))
     # threads.append(threading.Thread(target = cameraStreamThread))
     
     for thread in threads:
         thread.start()
-        
-    # Register exit handler method
-    atexit.register(exit_handler, camera, threads)
-    # atexit.register(goodbye, 'Donny', 'nice') # Can pass args when registering...
 
 def mkdir(pathIn):
     if os.path.exists(pathIn):
@@ -69,29 +69,6 @@ def mkdir(pathIn):
         # except Exception as e: print(e)
         except:
             print("Could not create directory: " + pathIn)
-
-def dataThread():
-    
-    while True:
-        
-        baroData = baro.getData()
-        data = {}
-        data['time'] = time.strftime('%m/%d/%Y %H:%M:%S %Z')
-        data['pressure'] = baroData[0]
-        data['temperature'] = baroData[1]
-        
-        timeString = time.strftime('%Y-%m-%d-%H-%M-%S')
-        dataPath = DATA_DIR + 'data_' + timeString + '.json'
-        
-        try:
-            with open(dataPath, 'w+') as f: # f = open(dataPath, 'w+')
-                json.dump(data, f, ensure_ascii=False, indent=2)
-                f.write('\n')
-                f.close()
-        except:
-            print("Could not create file: " + dataPath)
-        
-        time.sleep(5)
     
 def motionThread(motionEvent, motionEventComplete):
     
@@ -109,6 +86,7 @@ def motionThread(motionEvent, motionEventComplete):
             print("Motion event detected...")
             
             motionEvent.set()
+            motionEvent.clear()
             
         # If state changes from high to low
         if motionDetected == True and (not GPIO.input(PIR_PIN)):
@@ -118,6 +96,31 @@ def motionThread(motionEvent, motionEventComplete):
             print("Motion event completed...")
             
             motionEventComplete.set()
+            motionEventComplete.clear()
+            
+def dataThread(motionEvent):
+    
+    while True:
+        
+        motionEvent.wait()
+        
+        baroData = baro.getData()
+        data = {}
+        data['time'] = time.strftime('%m/%d/%Y %H:%M:%S %Z')
+        data['pressure'] = baroData[0]
+        data['temperature'] = baroData[1]
+        
+        timeString = time.strftime('%Y-%m-%d-%H-%M-%S')
+        dataPath = DATA_DIR + 'data_' + timeString + '.json'
+        
+        try:
+            with open(dataPath, 'w+') as f: # f = open(dataPath, 'w+')
+                json.dump(data, f, ensure_ascii=False, indent=2)
+                f.write('\n')
+                f.close()
+            print("Wrote baro data to JSON file")
+        except:
+            print("Could not create file: " + dataPath)
 
 def cameraStreamThread(cameraIn):
                 
@@ -141,22 +144,22 @@ def cameraRecordThread(cameraIn, motionEvent, motionEventComplete):
         print("Recording start...")
         cameraIn.start_recording(videoPath, splitter_port=2)
         
-        motionEvent.clear()
+        # motionEvent.clear()
+        
         motionEventComplete.wait()
         
         cameraIn.stop_recording(splitter_port=2)
         print("Recording end...")
         
-        motionEventComplete.clear()
+        # motionEventComplete.clear()
         
         subprocess.Popen(CONVERT_CMD, shell=True)
 
-def exit_handler(cameraIn, threadArray):
+def exit_handler(cameraIn):
     print("Exiting...")
-    for thread in threadArray:
-        thread.join()
-    cameraIn.stop_recording()
-    cameraIn.stop_recording(splitter_port=2)
+    # cameraIn.stop_recording()
+    # cameraIn.stop_recording(splitter_port=2)
+    cameraIn.close()
     GPIO.output(LED_PIN, GPIO.LOW)
     GPIO.cleanup()
 
