@@ -51,9 +51,9 @@ def main():
 
     # Start threads    
     threads = []
-    threads.append(threading.Thread(target = motionThread, args=(motionStart, motionEnd)))
-    threads.append(threading.Thread(target = cameraRecordThread, args=(camera, motionStart, motionEnd)))
-    threads.append(threading.Thread(target = dataThread, args=(motionStart)))
+    threads.append(threading.Thread(target=motionThread, args=(motionStart, motionEnd)))
+    threads.append(threading.Thread(target=cameraRecordThread, args=(camera, motionStart, motionEnd)))
+    threads.append(threading.Thread(target=dataThread, args=motionStart))
     # threads.append(threading.Thread(target = cameraStreamThread))
     
     for thread in threads:
