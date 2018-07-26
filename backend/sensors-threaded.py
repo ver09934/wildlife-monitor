@@ -25,37 +25,9 @@ LOWRES_VERT = 480
 LOWRES_HORIZ = 360
 CAM_FPS = 25
 
-
 # motion event
 motionEvent = threading.Event()
 motionEventComplete = threading.Event()
-
-# Create camera object (needs to be accessible from main method)
-camera = PiCamera()
-camera.resolution = (HIGHRES_VERT, HIGHRES_HORIZ)
-camera.framerate = CAM_FPS
-
-# Count number of times the PIR has triggered to high
-triggerCount = 1
-
-# Whether motion is detected - set inition motion state
-motionDetected = False
-
-# Setup GPIO pins
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(PIR_PIN, GPIO.IN)
-GPIO.setup(LED_PIN, GPIO.OUT)
-
-# Create data directory
-mkdir(DATA_DIR)
-
-# Register exit handler method
-atexit.register(exit_handler)
-
-# get youtube streaming key from yt-stream-key.txt
-f = open("yt-stream-key.txt", "r")
-if f.mode == 'r':
-    KEY = f.read()
 
 # For creating directories
 def mkdir(pathIn):
@@ -68,6 +40,40 @@ def mkdir(pathIn):
         # except Exception as e: print(e)
         except:
             print("Could not create directory: " + pathIn)
+
+# Declare global variables, setup GPIO pins
+def setup():
+
+    # Create camera object (needs to be accessible from main method)
+    global camera
+    camera = PiCamera()
+    camera.resolution = (HIGHRES_VERT, HIGHRES_HORIZ)
+    camera.framerate = CAM_FPS
+
+    # Count number of times the PIR has triggered to high
+    global triggerCount
+    triggerCount = 1
+
+    # Whether motion is detected - set inition motion state
+    global motionDetected
+    motionDetected = False
+
+    # Setup GPIO pins
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(PIR_PIN, GPIO.IN)
+    GPIO.setup(LED_PIN, GPIO.OUT)
+
+    # Create data directory
+    mkdir(DATA_DIR)
+
+    # Register exit handler method
+    atexit.register(exit_handler)
+    
+    # get youtube streaming key from yt-stream-key.txt
+    global KEY
+    f = open("yt-stream-key.txt", "r")
+    if f.mode == 'r':
+        KEY = f.read()
 
 def dataThread():
     
@@ -141,7 +147,7 @@ def cameraRecordThread():
         videoPath = DATA_DIR + 'video_' + timeString + '.h264'
         
         print("Recording start...")
-        camera.start_recording(videPath, splitter_port=2)
+        camera.start_recording(videoPath, splitter_port=2)
         
         motionEvent.clear()
         motionEventComplete.wait()
@@ -160,6 +166,7 @@ def main():
     setup()
 
     # Start threads
+    
     threads = []
     # threads.append(threading.Thread(target = dataThread))
     threads.append(threading.Thread(target = motionThread))
