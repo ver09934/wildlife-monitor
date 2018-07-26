@@ -16,7 +16,8 @@ LED_PIN = 4
 
 CONVERT_CMD = "bash videoconvert.sh " + DATA_DIR
 YOUTUBE="rtmp://a.rtmp.youtube.com/live2/"
-KEY = "" # Assigned in setup method
+with open("yt-stream-key.txt", "r") as f:
+    KEY = f.read()
 STREAM_CMD = 'avconv -re -ar 44100 -ac 2 -acodec pcm_s16le -f s16le -ac 2 -i /dev/zero -f h264 -i - -vcodec copy -acodec aac -ab 128k -g 50 -strict experimental -f flv ' + YOUTUBE + KEY
 
 HIGHRES_VERT = 1280
@@ -25,38 +26,12 @@ LOWRES_VERT = 480
 LOWRES_HORIZ = 360
 CAM_FPS = 25
 
-# motion event
-motionEvent = threading.Event()
-motionEventComplete = threading.Event()
+def main():
 
-# For creating directories
-def mkdir(pathIn):
-    if os.path.exists(pathIn):
-        print("Directory exists: " + os.path.abspath(pathIn))
-    else:
-        try:
-            os.mkdir(pathIn)
-            print("Created directory: " + os.path.abspath(pathIn))
-        # except Exception as e: print(e)
-        except:
-            print("Could not create directory: " + pathIn)
-
-# Declare global variables, setup GPIO pins
-def setup():
-
-    # Create camera object (needs to be accessible from main method)
-    global camera
+    # Create camera object
     camera = PiCamera()
     camera.resolution = (HIGHRES_VERT, HIGHRES_HORIZ)
     camera.framerate = CAM_FPS
-
-    # Count number of times the PIR has triggered to high
-    global triggerCount
-    triggerCount = 1
-
-    # Whether motion is detected - set inition motion state
-    global motionDetected
-    motionDetected = False
 
     # Setup GPIO pins
     GPIO.setmode(GPIO.BCM)
@@ -68,12 +43,32 @@ def setup():
 
     # Register exit handler method
     atexit.register(exit_handler)
+    # atexit.register(goodbye, 'Donny', 'nice') # Can pass args when registering...
     
-    # get youtube streaming key from yt-stream-key.txt
-    global KEY
-    f = open("yt-stream-key.txt", "r")
-    if f.mode == 'r':
-        KEY = f.read()
+    # motion events
+    motionStart = threading.Event()
+    motionEnd = threading.Event()
+
+    # Start threads    
+    threads = []
+    threads.append(threading.Thread(target = motionThread, args=(motionStart, motionEnd)))
+    threads.append(threading.Thread(target = cameraRecordThread))
+    # threads.append(threading.Thread(target = dataThread))
+    # threads.append(threading.Thread(target = cameraStreamThread))
+    
+    for thread in threads:
+        thread.start()
+
+def mkdir(pathIn):
+    if os.path.exists(pathIn):
+        print("Directory exists: " + os.path.abspath(pathIn))
+    else:
+        try:
+            os.mkdir(pathIn)
+            print("Created directory: " + os.path.abspath(pathIn))
+        # except Exception as e: print(e)
+        except:
+            print("Could not create directory: " + pathIn)
 
 def dataThread():
     
@@ -98,16 +93,16 @@ def dataThread():
         
         time.sleep(5)
     
-def motionThread():
+def motionThread(motionEvent, motionEventComplete):
     
-    # Global variables
-    global motionDetected
-    global triggerCount
+    motionDetected = false
+    triggerCount = 0
     
     while True:
         
         # If state changes from low to high
         if motionDetected == False and GPIO.input(PIR_PIN):
+            
             motionDetected = True
             triggerCount += 1
             GPIO.output(LED_PIN, GPIO.HIGH)
@@ -117,28 +112,25 @@ def motionThread():
             
         # If state changes from high to low
         if motionDetected == True and (not GPIO.input(PIR_PIN)):
+            
             motionDetected = False
             GPIO.output(LED_PIN, GPIO.LOW)
             print("Motion event completed...")
             
             motionEventComplete.set()
 
-def cameraStreamThread():
-    
-    global camera
-            
+def cameraStreamThread(cameraIn):
+                
     stream_pipe = subprocess.Popen(STREAM_CMD, shell=True, stdin=subprocess.PIPE)
 
     print("Starting streaming...")
-    camera.start_recording(stream_pipe.stdin, format='h264', resize=(LOWRES_VERT, LOWRES_HORIZ))
+    cameraIn.start_recording(stream_pipe.stdin, format='h264', resize=(LOWRES_VERT, LOWRES_HORIZ))
 
     while True:
-        camera.wait_recording(1)
+        cameraIn.wait_recording(1)
 
-def cameraRecordThread():
-    
-    global camera
-    
+def cameraRecordThread(cameraIn, motionEvent, motionEventComplete):
+        
     while True:
         
         motionEvent.wait()
@@ -147,45 +139,24 @@ def cameraRecordThread():
         videoPath = DATA_DIR + 'video_' + timeString + '.h264'
         
         print("Recording start...")
-        camera.start_recording(videoPath, splitter_port=2)
+        cameraIn.start_recording(videoPath, splitter_port=2)
         
         motionEvent.clear()
         motionEventComplete.wait()
         
-        camera.stop_recording(splitter_port=2)
+        cameraIn.stop_recording(splitter_port=2)
         print("Recording end...")
         
         motionEventComplete.clear()
         
         subprocess.Popen(CONVERT_CMD, shell=True)
 
-
-def main():
-
-    # Run setup function
-    setup()
-
-    # Start threads
-    
-    threads = []
-    # threads.append(threading.Thread(target = dataThread))
-    threads.append(threading.Thread(target = motionThread))
-    # threads.append(threading.Thread(target = cameraStreamThread))
-    threads.append(threading.Thread(target = cameraRecordThread))
-    
-    try:
-        for thread in threads:
-            thread.start()
-    except KeyboardInterrupt:
-        print("TESTING")
-
-# Could use try/catch
 def exit_handler():
     print("Exiting...")
-    global camera
     camera.stop_recording()
     camera.stop_recording(splitter_port=2)
     GPIO.output(LED_PIN, GPIO.LOW)
     GPIO.cleanup()
 
-main()
+if __name__ == '__main__':
+    main()
