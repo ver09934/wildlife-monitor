@@ -149,7 +149,7 @@ def cameraRecordThread(cameraIn, motionEvent, motionEventComplete):
         motionEventComplete.wait()
         
         cameraIn.stop_recording(splitter_port=2)
-        print("Recording end...")
+        print("Recording end...\n")
         
         # motionEventComplete.clear()
         
