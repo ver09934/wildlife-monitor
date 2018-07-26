@@ -8,6 +8,8 @@ import json
 import atexit # For exit handling
 import MPL3115A2 as baro
 
+import threading
+
 DATA_DIR = '../data/' # Needs '/' at the end
 PIR_PIN = 17
 LED_PIN = 4
@@ -22,6 +24,11 @@ HIGHRES_HORIZ = 720
 LOWRES_VERT = 480
 LOWRES_HORIZ = 360
 CAM_FPS = 25
+
+
+# motion event
+motionEvent = threading.Event()
+motionEventComplete = threading.Event()
 
 # For creating directories
 def mkdir(pathIn):
@@ -95,7 +102,7 @@ def dataThread():
 def motionThread():
     
     # Global variables
-       global motionDetected
+    global motionDetected
     global triggerCount
     
     while True:
@@ -107,11 +114,15 @@ def motionThread():
             GPIO.output(LED_PIN, GPIO.HIGH)
             print("Motion event detected...")
             
+            motionEvent.set()
+            
         # If state changes from high to low
         if motionDetected == True and (not GPIO.input(PIR_PIN)):
             motionDetected = False
             GPIO.output(LED_PIN, GPIO.LOW)
             print("Motion event completed...")
+            
+            motionEventComplete.set()
 
 def cameraStreamThread():
     
@@ -131,18 +142,24 @@ def cameraRecordThread():
     
     while True:
         
+        motionEvent.wait()
+        
         timeString = time.strftime('%Y-%m-%d-%H-%M-%S')
         videoPath = DATA_DIR + 'video_' + timeString + '.h264'
         
         print("Recording start...")
         camera.start_recording(videPath, splitter_port=2)
-        camera.wait_recording(5)
+        
+        motionEvent.clear()
+        motionEventComplete.wait()
+        
         camera.stop_recording(splitter_port=2)
         print("Recording end...")
         
+        motionEventComplete.clear()
+        
         subprocess.Popen(CONVERT_CMD, shell=True)
 
-        time.sleep(50)
 
 def main():
 
