@@ -18,9 +18,10 @@ camera = picamera.PiCamera()
 
 try:
     # camera.resolution = (1280, 720)
+    # camera.resolution = (960, 540)
     # camera.resolution = (858/848, 480)
     # camera.resolution = (640, 480/360)
-    camera.resolution = (960, 540)
+    camera.resolution = (640, 360)
     camera.framerate = 25
     # camera.vflip = True
     # camera.hflip = True

@@ -18,24 +18,23 @@ with picamera.PiCamera() as camera:
 
     try:
         camera.resolution = (1280, 720)
-        camera.framerate = 30
-        
+        camera.framerate = 25
+
         print("Streaming command starting...")
-        camera.start_recording(stream_pipe.stdin, format='h264', resize=(960, 540))
+        camera.start_recording(stream_pipe.stdin, format='h264', resize=(480, 360))
         print("Streaming command started...")
-        
+
         iter = 1
-        
         while True:
-            
+
             camera.wait_recording(10)
-            
+
             print("Recording " + str(iter) + " start...")
             camera.start_recording('highres-' + str(iter) + '.h264', splitter_port=2)
             camera.wait_recording(5)
             camera.stop_recording(splitter_port=2)
             print("Recording " + str(iter) + " end...")
-            
+
             camera.wait_recording(10)
             iter += 1
 
