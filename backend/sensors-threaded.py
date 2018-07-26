@@ -53,7 +53,7 @@ def main():
     threads = []
     threads.append(threading.Thread(target=motionThread, args=(motionStart, motionEnd)))
     threads.append(threading.Thread(target=cameraRecordThread, args=(camera, motionStart, motionEnd)))
-    threads.append(threading.Thread(target=dataThread, args=(motionStart,)))
+    threads.append(threading.Thread(target=dataThread, args=(motionStart, motionEnd))) # for one arg: args=(motionStart,)
     # threads.append(threading.Thread(target = cameraStreamThread))
     
     for thread in threads:
@@ -100,7 +100,7 @@ def motionThread(motionEvent, motionEventComplete):
             motionEvent.clear()
             motionEventComplete.clear()
             
-def dataThread(motionEvent):
+def dataThread(motionEvent, motionEventComplete):
     
     while True:
         
@@ -123,6 +123,8 @@ def dataThread(motionEvent):
             print("Wrote baro data to JSON file")
         except:
             print("Could not create file: " + dataPath)
+            
+        motionEventComplete.wait()
 
 def cameraStreamThread(cameraIn):
                 
