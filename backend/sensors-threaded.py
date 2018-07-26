@@ -153,12 +153,12 @@ def cameraRecordThread(cameraIn, motionEvent, motionEventComplete):
 
 def exit_handler(cameraIn, threadArray):
     print("Exiting...")
+    for thread in threadArray:
+        thread.join()
     cameraIn.stop_recording()
     cameraIn.stop_recording(splitter_port=2)
     GPIO.output(LED_PIN, GPIO.LOW)
     GPIO.cleanup()
-    for thread in threadArray:
-        thread.join()
 
 if __name__ == '__main__':
     main()
