@@ -141,7 +141,7 @@ def cameraRecordThread():
         videoPath = DATA_DIR + 'video_' + timeString + '.h264'
         
         print("Recording start...")
-        camera.start_recording(videoPath, splitter_port=2)
+        camera.start_recording(videPath, splitter_port=2)
         
         motionEvent.clear()
         motionEventComplete.wait()
