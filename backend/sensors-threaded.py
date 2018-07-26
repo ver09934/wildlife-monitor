@@ -178,14 +178,11 @@ def main():
 
 # Could use try/catch
 def exit_handler():
-    print("Exiting (somewhat) gracefully...")
-    if motionDetected == True and (not GPIO.input(PIR_PIN)):
-        print("Doing cleanup...")
-        GPIO.output(LED_PIN, GPIO.LOW)
-        global camera
-        camera.stop_recording()
-        cmd="bash videoconvert.sh " + DATA_DIR
-        subprocess.Popen(cmd, shell=True)
+    print("Exiting...")
+    global camera
+    camera.stop_recording()
+    camera.stop_recording(splitter_port=2)
+    GPIO.output(LED_PIN, GPIO.LOW)
     GPIO.cleanup()
 
 main()
