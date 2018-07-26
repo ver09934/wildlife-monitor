@@ -86,7 +86,7 @@ def motionThread(motionEvent, motionEventComplete):
             print("Motion event detected...")
             
             motionEvent.set()
-            motionEvent.clear()
+            # motionEvent.clear()
             
         # If state changes from high to low
         if motionDetected == True and (not GPIO.input(PIR_PIN)):
@@ -96,6 +96,8 @@ def motionThread(motionEvent, motionEventComplete):
             print("Motion event completed...")
             
             motionEventComplete.set()
+
+            motionEvent.clear()
             motionEventComplete.clear()
             
 def dataThread(motionEvent):
