@@ -173,8 +173,11 @@ def main():
     # threads.append(threading.Thread(target = cameraStreamThread))
     threads.append(threading.Thread(target = cameraRecordThread))
     
-    for thread in threads:
-        thread.start()
+    try:
+        for thread in threads:
+            thread.start()
+    except KeyboardInterrupt:
+        print("TESTING")
 
 # Could use try/catch
 def exit_handler():
