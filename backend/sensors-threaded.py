@@ -42,7 +42,7 @@ def main():
     mkdir(DATA_DIR)
 
     # Register exit handler method
-    atexit.register(exit_handler)
+    atexit.register(exit_handler, camera)
     # atexit.register(goodbye, 'Donny', 'nice') # Can pass args when registering...
     
     # motion events
@@ -52,7 +52,7 @@ def main():
     # Start threads    
     threads = []
     threads.append(threading.Thread(target = motionThread, args=(motionStart, motionEnd)))
-    threads.append(threading.Thread(target = cameraRecordThread))
+    threads.append(threading.Thread(target = cameraRecordThread), args=(camera, motionStart, motionEnd))
     # threads.append(threading.Thread(target = dataThread))
     # threads.append(threading.Thread(target = cameraStreamThread))
     
@@ -151,7 +151,7 @@ def cameraRecordThread(cameraIn, motionEvent, motionEventComplete):
         
         subprocess.Popen(CONVERT_CMD, shell=True)
 
-def exit_handler():
+def exit_handler(cameraIn):
     print("Exiting...")
     camera.stop_recording()
     camera.stop_recording(splitter_port=2)
