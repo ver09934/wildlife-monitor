@@ -2,6 +2,8 @@
 This project is designed to detect the presence of wildlife and record video footage and data of the events. Each camera unit pushes the footage and data to a sever, which displays the aggregated data in a user-friendly web frontend. The individual units are based on the Raspberry Pi 3 Model B+ with the Camera Module V2, though it could likely be made to work on other versions without much trouble.
 
 ## Connections
+Below are instructions on how to connect the various sensors to the Raspberry Pi. A helpful reference for the pinout can be found at [pinout.xyz](https://pinout.xyz/), or with a quick search online.
+
 ### PIR Sensor
 The units use the the HC-SR501 PIR Motion Sensor, which is readily available at a number of online retailers. This should be connected as follows:
 * TODO
