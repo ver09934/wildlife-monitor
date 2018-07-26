@@ -1,0 +1,7 @@
+# gitignore for backend of wildlife-monitor
+
+/yt-stream-key.txt
+
+# For temporary testing...
+*.h264
+*.mp4
