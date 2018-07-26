@@ -40,10 +40,6 @@ def main():
 
     # Create data directory
     mkdir(DATA_DIR)
-
-    # Register exit handler method
-    atexit.register(exit_handler, camera)
-    # atexit.register(goodbye, 'Donny', 'nice') # Can pass args when registering...
     
     # motion events
     motionStart = threading.Event()
@@ -58,6 +54,10 @@ def main():
     
     for thread in threads:
         thread.start()
+        
+    # Register exit handler method
+    atexit.register(exit_handler, camera, threads)
+    # atexit.register(goodbye, 'Donny', 'nice') # Can pass args when registering...
 
 def mkdir(pathIn):
     if os.path.exists(pathIn):
@@ -151,12 +151,14 @@ def cameraRecordThread(cameraIn, motionEvent, motionEventComplete):
         
         subprocess.Popen(CONVERT_CMD, shell=True)
 
-def exit_handler(cameraIn):
+def exit_handler(cameraIn, threadArray):
     print("Exiting...")
     cameraIn.stop_recording()
     cameraIn.stop_recording(splitter_port=2)
     GPIO.output(LED_PIN, GPIO.LOW)
     GPIO.cleanup()
+    for thread in threadArray:
+        thread.join()
 
 if __name__ == '__main__':
     main()
