@@ -95,7 +95,7 @@ def dataThread():
     
 def motionThread(motionEvent, motionEventComplete):
     
-    motionDetected = false
+    motionDetected = False
     triggerCount = 0
     
     while True:
