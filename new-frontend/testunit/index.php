@@ -33,7 +33,7 @@
         <tr>
           <td>1</td>
           <td><a href="">TODO (php)</a></td>
-          <td><a href="">TODO (php</a></td>
+          <td><a href="">TODO (php)</a></td>
         </tr>
       </table>
 
