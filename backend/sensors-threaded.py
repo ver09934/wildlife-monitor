@@ -1,3 +1,4 @@
+# external modules
 import RPi.GPIO as GPIO
 import time
 import subprocess
@@ -6,9 +7,10 @@ from picamera import PiCamera
 import smbus
 import json
 import atexit # For exit handling
-import MPL3115A2 as baro
-
 import threading
+
+# custom modules
+import MPL3115A2 as baro
 
 DATA_DIR = '../data/' # Needs '/' at the end
 PIR_PIN = 17

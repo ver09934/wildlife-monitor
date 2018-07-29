@@ -1,0 +1,25 @@
+<?xml version="1.0" ?>
+<data>
+  <row>
+      <temp>1.0</temp>
+      <pres>4.0</pres>
+  </row>
+  <row>
+      <temp>3.0</temp>
+      <pres>1.0</pres>
+  </row>
+  <row>
+      <temp>2.0</temp>
+      <pres>1.0</pres>
+  </row>
+  <row>
+      <temp>4.0</temp>
+      <pres>2.0</pres>
+  </row>
+  <row>
+      <temp>3.0</temp>
+      <pres>1.0</pres>
+  </row>
+</data>
+
+
