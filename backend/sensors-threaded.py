@@ -26,6 +26,9 @@ LOWRES_VERT = 480
 LOWRES_HORIZ = 360
 CAM_FPS = 25
 
+# TODO: Define semaphores, events, locks, etc. here so they don't have to be passed to methods as arguments
+
+# setup camera, GPIO, and start threads
 def main():
 
     # Create camera object
@@ -59,6 +62,7 @@ def main():
     for thread in threads:
         thread.start()
 
+# method to make directory - give path as argument
 def mkdir(pathIn):
     if os.path.exists(pathIn):
         print("Directory exists: " + os.path.abspath(pathIn))
@@ -69,7 +73,8 @@ def mkdir(pathIn):
         # except Exception as e: print(e)
         except:
             print("Could not create directory: " + pathIn)
-    
+  
+# when motion is detected (based off PIR and camera stream), set the motion detected event, which other threads are listening for
 def motionThread(motionEvent, motionEventComplete):
     
     motionDetected = False
@@ -99,7 +104,8 @@ def motionThread(motionEvent, motionEventComplete):
 
             motionEvent.clear()
             motionEventComplete.clear()
-            
+
+# record data when motion is detected
 def dataThread(motionEvent, motionEventComplete):
     
     while True:
@@ -125,6 +131,11 @@ def dataThread(motionEvent, motionEventComplete):
             print("Could not create file: " + dataPath)
             
         motionEventComplete.wait()
+
+# TODO
+# record data at regular interval (data thread has priority - this thread can only grab data if dataThread does not have the lock - just write file with time and null values)
+def dataIntervalThread():
+    pass
 
 def cameraStreamThread(cameraIn):
                 
@@ -158,6 +169,10 @@ def cameraRecordThread(cameraIn, motionEvent, motionEventComplete):
         # motionEventComplete.clear()
         
         subprocess.Popen(CONVERT_CMD, shell=True)
+        
+# Threads to add:
+# file transfer using rsync (could just make this a cron job...)
+# watching disk space and purging local logs / recordings if neccesary
 
 def exit_handler(cameraIn):
     print("Exiting...")
