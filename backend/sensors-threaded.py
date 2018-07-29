@@ -171,10 +171,12 @@ def cameraRecordThread(cameraIn, motionEvent, motionEventComplete):
         # motionEventComplete.clear()
         
         subprocess.Popen(CONVERT_CMD, shell=True)
-        
-# Threads to add:
-# file transfer using rsync (could just make this a cron job...)
-# watching disk space and purging local logs / recordings if neccesary
+   
+'''
+Threads to add:
+file transfer using rsync (could just make this a cron job...)
+watching disk space and purging local logs / recordings if neccesary
+'''
 
 def exit_handler(cameraIn):
     print("Exiting...")

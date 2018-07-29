@@ -12,7 +12,7 @@
     ?>
     <div id="main">
       
-      <h1>Wildlife Monitor Homepage</h1>
+      <h1>Test Unit Page</h1>
       
       <h2>Data Graphs</h2>
       
