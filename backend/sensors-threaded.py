@@ -176,8 +176,8 @@ def dataIntervalThread():
 
     while True:
         
-        # if (acquire lock / mutex)
-        
+        startTime = time.time()
+                
         baroLock.acquire()
         baroData = baro.getData()
         baroLock.release()
@@ -194,9 +194,16 @@ def dataIntervalThread():
         fields = ['time', 'pressure', 'temperature']
         values = [data['time'], data['pressure'], data['temperature']]
         appendFile(filePath, 'row', fields, values)        
-                
-        # looptime...
-        time.sleep(60)
+        
+        endTime = time.time()
+        
+        # To maintain a total looptime of 60, or whatever the value may be
+        # Excecpt ValueError in case endTime - startTime > 60
+        try:
+            time.sleep(60 - (endTime - startTime))
+        except ValueError:
+            time.sleep(60)
+            # pass
 
 def cameraStreamThread(cameraIn):
                 
