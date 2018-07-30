@@ -15,6 +15,9 @@ import MPL3115A2 as baro
 from lameXMLFormatter import *
 
 DATA_DIR = '../data/' # Needs '/' at the end
+# VIDEO_SUBDIR = 'video/'
+# INTEVALLOG_SUBDIR = 'datalog/'
+
 PIR_PIN = 17
 LED_PIN = 4
 
@@ -37,7 +40,10 @@ motionStart = threading.Event() # Set during motion, clear when no motion
 motionEnd = threading.Event() # Set when no motion, clear during motion
 
 # queues
-timequeue = queue.Queue() # To insure video + xml files have corresponding filenames
+timeQueue = queue.Queue() # To insure video + xml files have corresponding filenames
+
+# locks
+baroLock = threading.Lock()
 
 # setup camera, GPIO, and start threads
 def main():
@@ -117,7 +123,7 @@ def motionThread():
             motionEnd.set()
 
 
-# record data when motion is detected, higher priority than dataIntervalThread
+# record data when motion is detected (waits for lock on baro), higher priority than dataIntervalThread
 # Creates a separate file for each event, with name corresponding to the created video file
 def dataMotionThread():
    
@@ -126,7 +132,7 @@ def dataMotionThread():
     while True:
         
         motionStart.wait()
-        
+                
         # See "Mapping Types - dict" in the python3 documentation
         data = {}
         
@@ -136,9 +142,12 @@ def dataMotionThread():
         
         dataPath = DATA_DIR + 'data_' + timeString + '.xml'
         # Send filename to video thread, so they are guaranteed to match
-        timequeue.put(timeString)
+        timeQueue.put(timeString)
         
+        baroLock.acquire()
         baroData = baro.getData()
+        baroLock.release()
+        
         data['pressure'] = baroData[0]
         data['temperature'] = baroData[1]
         
@@ -150,18 +159,42 @@ def dataMotionThread():
         
         motionEnd.wait()
 
-# record data at regular interval (data thread has priority - this thread can only grab data if dataThread does not have the lock - just write file with time and null values)
+# record data at regular interval (waits for lock on baro)
 def dataIntervalThread():
    
     print("--- Regular Interval Data Thread Started ---")
- 
+         
+    # print() # print('\n', end='')
+    # print("Data interval thread got lock (not really)")
+    # print("Data interval thread collecting data (not really)")
+    # TODO: Check if logfile already exists...
+    # Idea: 1 log per day? Check if it exists, if not, make it...
+    
+    filePath = DATA_DIR + 'current_log.xml'
+       
+    createFile(filePath, 'data')
+
     while True:
         
-        print() # print('\n', end='')
-        print("Data interval thread got lock (not really)")
-        print("Data interval thread collecting data (not really)")
-        # TODO: Check if logfile already exists...
+        # if (acquire lock / mutex)
         
+        baroLock.acquire()
+        baroData = baro.getData()
+        baroLocl.release()
+        
+        data = {}
+        # See "Mapping Types - dict" in the python3 documentation
+        data['time'] = time.strftime('%m/%d/%Y %H:%M:%S %Z')
+        data['pressure'] = baroData[0]
+        data['temperature'] = baroData[1]
+        
+        timeString = time.strftime('%Y-%m-%d-%H-%M-%S')
+        dataPath = DATA_DIR + 'data_' + timeString + '.json'
+        
+        fields = ['time', 'pressure', 'temperature']
+        values = [data['time'], data['pressure'], data['temperature']]
+        appendFile(filePath, 'row', fields, values)        
+                
         # looptime...
         time.sleep(60)
 
@@ -187,8 +220,8 @@ def cameraRecordThread(cameraIn):
         motionStart.wait()
         
         # get timeString from motion data thread
-        timeString = timequeue.get()
-        timequeue.queue.clear() # Clear the queue, just for kicks...
+        timeString = timeQueue.get()
+        timeQueue.queue.clear() # Clear the queue, just for kicks...
         
         videoPath = DATA_DIR + 'video_' + timeString + '.h264'
         
