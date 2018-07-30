@@ -112,12 +112,18 @@ def motionThread():
 def dataThread():
     
     filePath = DATA_DIR + 'current_log.xml'
-    createFile(filePath, 'data')
-    
+   
+    firstTime = True
+ 
     while True:
         
         motionStart.wait()
         
+        if (firstTime == True):
+            createFile(filePath, 'data')
+            firstTime = False
+
+        # TODO: Check if logfile already exists... (should probably be in other data thread...)
         # TODO: Get filename from motion thread, so it matches
         
         baroData = baro.getData()
