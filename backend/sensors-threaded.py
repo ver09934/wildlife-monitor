@@ -100,6 +100,7 @@ def motionThread():
             motionDetected = True
             triggerCount += 1
             GPIO.output(LED_PIN, GPIO.HIGH)
+            print() # print('\n', end='')
             print("Motion event detected...")
             
             motionStart.set()
@@ -145,7 +146,7 @@ def dataMotionThread():
         values = [data['time'], data['pressure'], data['temperature']]
         
         createFile(dataPath, 'data') # 'data' is a string, not the variable data
-        appendFile(filePath, 'row', fields, values)       
+        appendFile(dataPath, 'row', fields, values)       
         
         motionEnd.wait()
 
@@ -156,6 +157,7 @@ def dataIntervalThread():
  
     while True:
         
+        print() # print('\n', end='')
         print("Data interval thread got lock (not really)")
         print("Data interval thread collecting data (not really)")
         # TODO: Check if logfile already exists...
@@ -167,7 +169,8 @@ def cameraStreamThread(cameraIn):
                 
     print("--- Streaming Thread Started ---")
 
-    stream_pipe = subprocess.Popen(STREAM_CMD, shell=True, stdin=subprocess.PIPE)
+    # NOTE: If there are streaming issues and the avconv/ffmpeg output is needed, remove the stdout=subprocess.DEVNULL argument, which silences the command
+    stream_pipe = subprocess.Popen(STREAM_CMD, shell=True, stdin=subprocess.PIPE, stdout=subprocess.DEVNULL)
 
     # print("Starting streaming...")
     cameraIn.start_recording(stream_pipe.stdin, format='h264', resize=(LOWRES_VERT, LOWRES_HORIZ))
@@ -195,7 +198,7 @@ def cameraRecordThread(cameraIn):
         motionEnd.wait()
         
         cameraIn.stop_recording(splitter_port=2)
-        print("Recording end...\n")
+        print("Recording end...")
                 
         subprocess.Popen(CONVERT_CMD, shell=True)
    
@@ -212,6 +215,7 @@ def exit_handler(cameraIn):
     if motionStart.is_set():
         cameraIn.stop_recording()
         cameraIn.stop_recording(splitter_port=2)
+        subprocess.Popen(CONVERT_CMD, shell=True)
     cameraIn.close()
     GPIO.output(LED_PIN, GPIO.LOW)
     GPIO.cleanup()
