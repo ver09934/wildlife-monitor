@@ -174,8 +174,8 @@ def dataIntervalThread():
     filePath = DATA_DIR + 'current_log.xml'
        
     createFile(filePath, 'data')
-    
-    minFreq = 2
+ 
+    minFreq = 1
     dataLock = False
     
     while True:
@@ -184,7 +184,7 @@ def dataIntervalThread():
         second = x.second
         minute = x.minute
         
-        if second = 0 and minute % minFreq = 0 and dataLock == False:
+        if second == 0 and minute % minFreq == 0 and dataLock == False:
                 
             baroLock.acquire()
             baroData = baro.getData()
@@ -205,8 +205,8 @@ def dataIntervalThread():
             
             dataLock = True
         
-        else if second != 0:
-            dataLock = false
+        elif second != 0:
+            dataLock = False
         
         else:
             time.sleep(0.001)
