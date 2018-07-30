@@ -16,13 +16,13 @@ import MPL3115A2 as baro
 from lameXMLFormatter import *
 
 DATA_DIR = '../data/' # Needs '/' at the end
-# VIDEO_SUBDIR = 'video/'
-# INTEVALLOG_SUBDIR = 'datalog/'
+VIDEO_SUBDIR = 'videos/' # Needs '/' at the end
+DATALOG_SUBDIR = 'datalogs/' # Needs '/' at the end
 
 PIR_PIN = 17
 LED_PIN = 4
 
-CONVERT_CMD = "bash videoconvert.sh " + DATA_DIR
+CONVERT_CMD = "bash videoconvert.sh " + DATA_DIR + VIDEO_SUBDIR
 YOUTUBE="rtmp://a.rtmp.youtube.com/live2/"
 with open("yt-stream-key.txt", "r") as f:
     KEY = f.read()
@@ -39,6 +39,7 @@ CAM_FPS = 25
 # events
 motionStart = threading.Event() # Set during motion, clear when no motion
 motionEnd = threading.Event() # Set when no motion, clear during motion
+minutely = threading.event() # Set and immediately cleared every minute
 
 # queues
 timeQueue = queue.Queue() # To insure video + xml files have corresponding filenames
@@ -49,6 +50,7 @@ baroLock = threading.Lock()
 # setup camera, GPIO, and start threads
 def main():
 
+    # ----- To move outside main -----
     # Create camera object
     camera = PiCamera()
     camera.resolution = (HIGHRES_VERT, HIGHRES_HORIZ)
@@ -59,8 +61,12 @@ def main():
     GPIO.setup(PIR_PIN, GPIO.IN)
     GPIO.setup(LED_PIN, GPIO.OUT)
 
-    # Create data directory
+    # Create data directories
     mkdir(DATA_DIR)
+    mkdir(DATA_DIR + VIDEO_SUBDIR)
+    mkdir(DATA_DIR + DATALOG_SUBDIR)
+    
+    # --------------------------------
     
     # Register exit handler method
     atexit.register(exit_handler, camera)
@@ -68,6 +74,7 @@ def main():
 
     # Start threads    
     threads = []
+    threads.append(threading.Thread(target=timerThread))
     threads.append(threading.Thread(target=motionThread))
     threads.append(threading.Thread(target=cameraRecordThread, args=(camera,))) # Need the "," to make it a list
     threads.append(threading.Thread(target=dataMotionThread))
@@ -88,7 +95,31 @@ def mkdir(pathIn):
         # except Exception as e: print(e)
         except:
             print("Could not create directory: " + pathIn)
-  
+            
+def timerThread():
+    
+    print("--- Timer Thread Started ---")
+    
+    minFreq = 1
+    locker = False
+    
+    while True:
+    
+        x = datetime.datetime.now()
+        second = x.second
+        minute = x.minute
+        
+        if second == 0 and minute % minFreq == 0 and locker == False:
+            locker = True
+            minutely.set()
+            minutely.clear()
+        
+        elif second != 0
+            locker = False
+        
+        else:
+            time.sleep(0.001)
+
 # when motion is detected (based off PIR and camera stream), set the motion detected event, which other threads are listening for
 def motionThread():
     
@@ -110,8 +141,8 @@ def motionThread():
             print() # print('\n', end='')
             print("Motion event detected...")
             
-            motionStart.set()
             motionEnd.clear()
+            motionStart.set()
             
         # If state changes from high to low
         if motionDetected == True and (not GPIO.input(PIR_PIN)):
@@ -141,7 +172,7 @@ def dataMotionThread():
         data['time'] = time.strftime('%m/%d/%Y %H:%M:%S %Z')
         timeString = time.strftime('%Y-%m-%d-%H-%M-%S')
         
-        dataPath = DATA_DIR + 'data_' + timeString + '.xml'
+        dataPath = DATA_DIR + VIDEO_SUBDIR + 'data_' + timeString + '.xml'
         # Send filename to video thread, so they are guaranteed to match
         timeQueue.put(timeString)
         
@@ -164,27 +195,20 @@ def dataMotionThread():
 def dataIntervalThread():
    
     print("--- Regular Interval Data Thread Started ---")
-         
+    
     # print() # print('\n', end='')
     # print("Data interval thread got lock (not really)")
     # print("Data interval thread collecting data (not really)")
     # TODO: Check if logfile already exists...
     # Idea: 1 log per day? Check if it exists, if not, make it...
     
-    filePath = DATA_DIR + 'current_log.xml'
-       
-    createFile(filePath, 'data')
- 
-    minFreq = 1
-    dataLock = False
+    filePath = DATA_DIR + DATALOG_SUBDIR + 'current_log-' + time.strftime('%Y-%m-%d') + '.xml'
+    if not os.path.isfile(filePath):
+        createFile(filePath, 'data')
     
     while True:
-
-        x = datetime.datetime.now()
-        second = x.second
-        minute = x.minute
         
-        if second == 0 and minute % minFreq == 0 and dataLock == False:
+            minutely.wait()
                 
             baroLock.acquire()
             baroData = baro.getData()
@@ -197,30 +221,11 @@ def dataIntervalThread():
             data['temperature'] = baroData[1]
             
             timeString = time.strftime('%Y-%m-%d-%H-%M-%S')
-            dataPath = DATA_DIR + 'data_' + timeString + '.json'
+            dataPath = DATA_DIR + DATALOG_SUBDIR + 'data_' + timeString + '.json'
             
             fields = ['time', 'pressure', 'temperature']
             values = [data['time'], data['pressure'], data['temperature']]
             appendFile(filePath, 'row', fields, values)
-            
-            dataLock = True
-        
-        elif second != 0:
-            dataLock = False
-        
-        else:
-            time.sleep(0.001)
-        
-        #startTime = time.time()
-        #endTime = time.time()
-        
-        # To maintain a total looptime of 60, or whatever the value may be
-        # Excecpt ValueError in case endTime - startTime > 60
-        #try:
-        #    time.sleep(60 - (endTime - startTime))
-        #except ValueError:
-        #    time.sleep(60)
-            # pass
 
 def cameraStreamThread(cameraIn):
                 
@@ -247,7 +252,7 @@ def cameraRecordThread(cameraIn):
         timeString = timeQueue.get()
         timeQueue.queue.clear() # Clear the queue, just for kicks...
         
-        videoPath = DATA_DIR + 'video_' + timeString + '.h264'
+        videoPath = DATA_DIR + VIDEO_SUBDIR + 'video_' + timeString + '.h264'
         
         print("Recording start...")
         cameraIn.start_recording(videoPath, splitter_port=2)
@@ -258,29 +263,30 @@ def cameraRecordThread(cameraIn):
         print("Recording end...")
                 
         subprocess.Popen(CONVERT_CMD, shell=True)
-   
+        
 '''
 Threads to add:
 - file transfer using rsync (could just make this a cron job...)
 - watching disk space and purging local logs / recordings if neccesary
-Other to add:
-- a lock between the two data threads
 '''
 
 def exit_handler(cameraIn):
     print("Exiting...")
-    if motionStart.is_set():
-        cameraIn.stop_recording()
-        cameraIn.stop_recording(splitter_port=2)
-        subprocess.Popen(CONVERT_CMD, shell=True)
-    cameraIn.close()
     GPIO.output(LED_PIN, GPIO.LOW)
     GPIO.cleanup()
+    if motionStart.is_set():
+        subprocess.Popen(CONVERT_CMD, shell=True)
+        cameraIn.stop_recording()
+        cameraIn.stop_recording(splitter_port=2)
+    cameraIn.close()
     print("Finished cleanup.")
     '''
-    Instead of using while True in all the threads, use while <boolean var>
+    Idea: Instead of using while True in all the threads, use while <boolean var>
     This var is set to true at beginning of program, and exit handler sets it to false, 
     and then for thread in threads: thread.join()
+    Time notes:
+    - time.time()
+    - datetime.datetime.now(), datetime.datetime.now().second, etc.
     '''
 
 if __name__ == '__main__':
