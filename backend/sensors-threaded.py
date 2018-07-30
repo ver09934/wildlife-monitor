@@ -9,6 +9,7 @@ import json
 import atexit # For exit handling
 import threading
 import queue
+import datetime
 
 # custom modules
 import MPL3115A2 as baro
@@ -173,36 +174,52 @@ def dataIntervalThread():
     filePath = DATA_DIR + 'current_log.xml'
        
     createFile(filePath, 'data')
-
+    
+    minFreq = 2
+    dataLock = False
+    
     while True:
+
+        x = datetime.datetime.now()
+        second = x.second
+        minute = x.minute
         
-        startTime = time.time()
+        if second = 0 and minute % minFreq = 0 and dataLock == False:
                 
-        baroLock.acquire()
-        baroData = baro.getData()
-        baroLock.release()
+            baroLock.acquire()
+            baroData = baro.getData()
+            baroLock.release()
+            
+            data = {}
+            # See "Mapping Types - dict" in the python3 documentation
+            data['time'] = time.strftime('%m/%d/%Y %H:%M:%S %Z')
+            data['pressure'] = baroData[0]
+            data['temperature'] = baroData[1]
+            
+            timeString = time.strftime('%Y-%m-%d-%H-%M-%S')
+            dataPath = DATA_DIR + 'data_' + timeString + '.json'
+            
+            fields = ['time', 'pressure', 'temperature']
+            values = [data['time'], data['pressure'], data['temperature']]
+            appendFile(filePath, 'row', fields, values)
+            
+            dataLock = True
         
-        data = {}
-        # See "Mapping Types - dict" in the python3 documentation
-        data['time'] = time.strftime('%m/%d/%Y %H:%M:%S %Z')
-        data['pressure'] = baroData[0]
-        data['temperature'] = baroData[1]
+        else if second != 0:
+            dataLock = false
         
-        timeString = time.strftime('%Y-%m-%d-%H-%M-%S')
-        dataPath = DATA_DIR + 'data_' + timeString + '.json'
+        else:
+            time.sleep(0.001)
         
-        fields = ['time', 'pressure', 'temperature']
-        values = [data['time'], data['pressure'], data['temperature']]
-        appendFile(filePath, 'row', fields, values)        
-        
-        endTime = time.time()
+        #startTime = time.time()
+        #endTime = time.time()
         
         # To maintain a total looptime of 60, or whatever the value may be
         # Excecpt ValueError in case endTime - startTime > 60
-        try:
-            time.sleep(60 - (endTime - startTime))
-        except ValueError:
-            time.sleep(60)
+        #try:
+        #    time.sleep(60 - (endTime - startTime))
+        #except ValueError:
+        #    time.sleep(60)
             # pass
 
 def cameraStreamThread(cameraIn):
