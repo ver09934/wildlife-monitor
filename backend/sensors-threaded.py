@@ -11,6 +11,7 @@ import threading
 
 # custom modules
 import MPL3115A2 as baro
+from lameXMLFormatter import *
 
 DATA_DIR = '../data/' # Needs '/' at the end
 PIR_PIN = 17
@@ -28,7 +29,9 @@ LOWRES_VERT = 480
 LOWRES_HORIZ = 360
 CAM_FPS = 25
 
-# TODO: Define semaphores, events, locks, etc. here so they don't have to be passed to methods as arguments
+# Define semaphores, events, locks, etc. here so they don't have to be passed to methods as arguments
+motionStart = threading.Event()
+motionEnd = threading.Event()
 
 # setup camera, GPIO, and start threads
 def main():
@@ -49,17 +52,13 @@ def main():
     # Register exit handler method
     atexit.register(exit_handler, camera)
     # atexit.register(goodbye, 'Donny', 'nice') # Can pass args when registering...
-    
-    # motion events
-    motionStart = threading.Event()
-    motionEnd = threading.Event()
 
     # Start threads    
     threads = []
-    threads.append(threading.Thread(target=motionThread, args=(motionStart, motionEnd)))
-    threads.append(threading.Thread(target=cameraRecordThread, args=(camera, motionStart, motionEnd)))
-    threads.append(threading.Thread(target=dataThread, args=(motionStart, motionEnd))) # for one arg: args=(motionStart,)
-    # threads.append(threading.Thread(target = cameraStreamThread))
+    threads.append(threading.Thread(target=motionThread))
+    threads.append(threading.Thread(target=cameraRecordThread, args=(camera,))) # Need the "," to make it a list
+    threads.append(threading.Thread(target=dataThread))
+    # threads.append(threading.Thread(target = cameraStreamThread, args=(camera,)))
     
     for thread in threads:
         thread.start()
@@ -77,10 +76,12 @@ def mkdir(pathIn):
             print("Could not create directory: " + pathIn)
   
 # when motion is detected (based off PIR and camera stream), set the motion detected event, which other threads are listening for
-def motionThread(motionEvent, motionEventComplete):
+def motionThread():
     
     motionDetected = False
     triggerCount = 0
+    
+    motionEnd.set()
     
     while True:
         
@@ -92,8 +93,8 @@ def motionThread(motionEvent, motionEventComplete):
             GPIO.output(LED_PIN, GPIO.HIGH)
             print("Motion event detected...")
             
-            motionEvent.set()
-            # motionEvent.clear()
+            motionStart.set()
+            motionEnd.clear()
             
         # If state changes from high to low
         if motionDetected == True and (not GPIO.input(PIR_PIN)):
@@ -102,17 +103,16 @@ def motionThread(motionEvent, motionEventComplete):
             GPIO.output(LED_PIN, GPIO.LOW)
             print("Motion event completed...")
             
-            motionEventComplete.set()
+            motionStart.clear()
+            motionEnd.set()
 
-            motionEvent.clear()
-            motionEventComplete.clear()
 
 # record data when motion is detected
-def dataThread(motionEvent, motionEventComplete):
+def dataThread():
     
     while True:
         
-        motionEvent.wait()
+        motionStart.wait()
         
         baroData = baro.getData()
         data = {}
@@ -132,7 +132,7 @@ def dataThread(motionEvent, motionEventComplete):
         except:
             print("Could not create file: " + dataPath)
             
-        motionEventComplete.wait()
+        motionEnd.wait()
 
 # TODO
 # record data at regular interval (data thread has priority - this thread can only grab data if dataThread does not have the lock - just write file with time and null values)
@@ -149,27 +149,23 @@ def cameraStreamThread(cameraIn):
     while True:
         cameraIn.wait_recording(1)
 
-def cameraRecordThread(cameraIn, motionEvent, motionEventComplete):
+def cameraRecordThread(cameraIn):
         
     while True:
         
-        motionEvent.wait()
+        motionStart.wait()
         
         timeString = time.strftime('%Y-%m-%d-%H-%M-%S')
         videoPath = DATA_DIR + 'video_' + timeString + '.h264'
         
         print("Recording start...")
         cameraIn.start_recording(videoPath, splitter_port=2)
-        
-        # motionEvent.clear()
-        
+                
         motionEventComplete.wait()
         
         cameraIn.stop_recording(splitter_port=2)
         print("Recording end...\n")
-        
-        # motionEventComplete.clear()
-        
+                
         subprocess.Popen(CONVERT_CMD, shell=True)
    
 '''
@@ -180,8 +176,9 @@ watching disk space and purging local logs / recordings if neccesary
 
 def exit_handler(cameraIn):
     print("Exiting...")
-    # cameraIn.stop_recording()
-    # cameraIn.stop_recording(splitter_port=2)
+    if motionStart.is_set():
+        cameraIn.stop_recording()
+        cameraIn.stop_recording(splitter_port=2)
     cameraIn.close()
     GPIO.output(LED_PIN, GPIO.LOW)
     GPIO.cleanup()
