@@ -1,5 +1,5 @@
 # Overly simple, crude, and specific module for formatting / writing XML files
-# This is probably full of bad ideas
+# This is probably full of bad ideas, but the library examples I saw for writing XML looked annoying
 
 # creates a file with the specified parent tag
 def createFile(filepath, superParentTag):
