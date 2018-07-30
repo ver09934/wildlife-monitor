@@ -34,7 +34,7 @@ def appendFile(filepath, parentTag, childTags, childData):
     fileAppendList = []
     
     fileAppendList.append('  ' + '<' + parentTag + '>' + '\n')
-    for i in range(0, len(childTags) - 1):
+    for i in range(0, len(childTags)):
         fileAppendList.append('  ' + '  ' + '<' + str(childTags[i]) + '>' + str(childData[i]) + '</' + str(childTags[i]) + '>' + '\n')
     fileAppendList.append('  ' + '</' + parentTag + '>' + '\n')
     fileAppendList.append(lastLine)

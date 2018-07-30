@@ -57,7 +57,7 @@ def main():
     threads = []
     threads.append(threading.Thread(target=motionThread))
     threads.append(threading.Thread(target=cameraRecordThread, args=(camera,))) # Need the "," to make it a list
-    threads.append(threading.Thread(target=dataThread))
+    threads.append(threading.Thread(target=dataMotionThread))
     # threads.append(threading.Thread(target = cameraStreamThread, args=(camera,)))
     # threads.append(threading.Thread(target = dataIntervalThread))
     
@@ -79,6 +79,8 @@ def mkdir(pathIn):
 # when motion is detected (based off PIR and camera stream), set the motion detected event, which other threads are listening for
 def motionThread():
     
+    print('--- Motion Detection Thread Started ---')    
+
     motionDetected = False
     triggerCount = 0
     
@@ -109,8 +111,10 @@ def motionThread():
 
 
 # record data when motion is detected, higher priority than dataIntervalThread
-def dataThread():
-    
+def dataMotionThread():
+   
+    print("--- Motion Trigger Data Thread Started ---")
+ 
     filePath = DATA_DIR + 'current_log.xml'
    
     firstTime = True
@@ -144,15 +148,19 @@ def dataThread():
 
 # record data at regular interval (data thread has priority - this thread can only grab data if dataThread does not have the lock - just write file with time and null values)
 def dataIntervalThread():
-    
+   
+    print("--- Regular Interval Data Thread Started ---")
+ 
     while True:
         time.sleep(60)
 
 def cameraStreamThread(cameraIn):
                 
+    print("--- Streaming Thread Started ---")
+
     stream_pipe = subprocess.Popen(STREAM_CMD, shell=True, stdin=subprocess.PIPE)
 
-    print("Starting streaming...")
+    # print("Starting streaming...")
     cameraIn.start_recording(stream_pipe.stdin, format='h264', resize=(LOWRES_VERT, LOWRES_HORIZ))
 
     while True:
@@ -160,6 +168,8 @@ def cameraStreamThread(cameraIn):
 
 def cameraRecordThread(cameraIn):
         
+    print("--- Motion Camera Thread Started ---")
+
     while True:
         
         motionStart.wait()
@@ -170,7 +180,7 @@ def cameraRecordThread(cameraIn):
         print("Recording start...")
         cameraIn.start_recording(videoPath, splitter_port=2)
                 
-        motionEventComplete.wait()
+        motionEnd.wait()
         
         cameraIn.stop_recording(splitter_port=2)
         print("Recording end...\n")
