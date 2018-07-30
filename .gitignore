@@ -10,3 +10,12 @@ __pycache__
 
 # nano/vim backup files
 *.sw*
+
+# In case they are not in a gitignored directory
+*.h264
+*.mp4
+*.xml
+*.json
+
+# youtube streaming key (at /yt-stream-key.txt or /backend/yt-stream-key.txt
+yt-stream-key.txt
