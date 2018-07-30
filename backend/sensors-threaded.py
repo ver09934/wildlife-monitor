@@ -180,7 +180,7 @@ def dataIntervalThread():
         
         baroLock.acquire()
         baroData = baro.getData()
-        baroLocl.release()
+        baroLock.release()
         
         data = {}
         # See "Mapping Types - dict" in the python3 documentation
@@ -252,6 +252,7 @@ def exit_handler(cameraIn):
     cameraIn.close()
     GPIO.output(LED_PIN, GPIO.LOW)
     GPIO.cleanup()
+    print("Finished cleanup.")
     '''
     Instead of using while True in all the threads, use while <boolean var>
     This var is set to true at beginning of program, and exit handler sets it to false, 
