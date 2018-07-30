@@ -86,3 +86,10 @@ def getData():
     celsius = t_msb + ( (t_lsb >> 4) / 16.0 ) # Add integer part (in t_msb), and the fractional part (bits 7 through 4), shifted down 4 to get rid of extra zero digits
 
     return [pressure, celsius]
+    
+def main():
+    data = getData()
+    print("Pressure (Pa): " + str(data[0]) + "\nTemperature (" + u'\N{DEGREE SIGN}' + "C): " str(data[1]))
+    
+if __name__ == '__main__':
+    main()
