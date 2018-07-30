@@ -59,6 +59,7 @@ def main():
     threads.append(threading.Thread(target=cameraRecordThread, args=(camera,))) # Need the "," to make it a list
     threads.append(threading.Thread(target=dataThread))
     # threads.append(threading.Thread(target = cameraStreamThread, args=(camera,)))
+    # threads.append(threading.Thread(target = dataIntervalThread))
     
     for thread in threads:
         thread.start()
@@ -107,15 +108,21 @@ def motionThread():
             motionEnd.set()
 
 
-# record data when motion is detected
+# record data when motion is detected, higher priority than dataIntervalThread
 def dataThread():
+    
+    filePath = DATA_DIR + 'current_log.xml'
+    createFile(filePath, 'data')
     
     while True:
         
         motionStart.wait()
         
+        # TODO: Get filename from motion thread, so it matches
+        
         baroData = baro.getData()
         data = {}
+        # See "Mapping Types - dict" in the python3 documentation
         data['time'] = time.strftime('%m/%d/%Y %H:%M:%S %Z')
         data['pressure'] = baroData[0]
         data['temperature'] = baroData[1]
@@ -123,21 +130,17 @@ def dataThread():
         timeString = time.strftime('%Y-%m-%d-%H-%M-%S')
         dataPath = DATA_DIR + 'data_' + timeString + '.json'
         
-        try:
-            with open(dataPath, 'w+') as f: # f = open(dataPath, 'w+')
-                json.dump(data, f, ensure_ascii=False, indent=2)
-                f.write('\n')
-                f.close()
-            print("Wrote baro data to JSON file")
-        except:
-            print("Could not create file: " + dataPath)
-            
+        fields = ['time', 'pressure', 'temperature']
+        values = [data['time'], data['pressure'], data['temperature']]
+        appendFile(filePath, 'row', fields, values)        
+        
         motionEnd.wait()
 
-# TODO
 # record data at regular interval (data thread has priority - this thread can only grab data if dataThread does not have the lock - just write file with time and null values)
 def dataIntervalThread():
-    pass
+    
+    while True:
+        time.sleep(60)
 
 def cameraStreamThread(cameraIn):
                 
