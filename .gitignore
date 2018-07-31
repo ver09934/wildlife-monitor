@@ -19,3 +19,7 @@ __pycache__
 
 # youtube streaming key (at /yt-stream-key.txt or /backend/yt-stream-key.txt
 yt-stream-key.txt
+
+# temp data directory
+/new-frontend/testunit/data
+
