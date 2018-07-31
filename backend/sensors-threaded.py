@@ -4,8 +4,6 @@ import time
 import subprocess
 import os
 from picamera import PiCamera
-import smbus
-import json
 import atexit # For exit handling
 import threading
 import queue
@@ -65,7 +63,6 @@ def main():
     mkdir(DATA_DIR)
     mkdir(DATA_DIR + VIDEO_SUBDIR)
     mkdir(DATA_DIR + DATALOG_SUBDIR)
-    
     # --------------------------------
     
     # Register exit handler method
