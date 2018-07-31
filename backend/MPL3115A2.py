@@ -89,7 +89,7 @@ def getData():
     
 def main():
     data = getData()
-    print("Pressure (Pa): " + str(data[0]) + "\nTemperature (" + u'\N{DEGREE SIGN}' + "C): " str(data[1]))
+    print("Pressure (Pa): " + str(data[0]) + "\nTemperature (" + u'\N{DEGREE SIGN}' + "C): " + str(data[1]))
     
 if __name__ == '__main__':
     main()

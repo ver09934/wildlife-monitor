@@ -39,7 +39,7 @@ CAM_FPS = 25
 # events
 motionStart = threading.Event() # Set during motion, clear when no motion
 motionEnd = threading.Event() # Set when no motion, clear during motion
-minutely = threading.event() # Set and immediately cleared every minute
+minutely = threading.Event() # Set and immediately cleared every minute
 
 # queues
 timeQueue = queue.Queue() # To insure video + xml files have corresponding filenames
@@ -114,7 +114,7 @@ def timerThread():
             minutely.set()
             minutely.clear()
         
-        elif second != 0
+        elif second != 0:
             locker = False
         
         else:
@@ -129,7 +129,10 @@ def motionThread():
     triggerCount = 0
     
     motionEnd.set()
-    
+
+    # Give all the threads time to start
+    time.sleep(1)
+ 
     while True:
         
         # If state changes from low to high
