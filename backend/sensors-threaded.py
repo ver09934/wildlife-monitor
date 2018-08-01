@@ -220,9 +220,6 @@ def dataIntervalThread():
             data['pressure'] = baroData[0]
             data['temperature'] = baroData[1]
             
-            timeString = time.strftime('%Y-%m-%d-%H-%M-%S')
-            dataPath = DATA_DIR + DATALOG_SUBDIR + 'data_' + timeString + '.json'
-            
             fields = ['time', 'pressure', 'temperature']
             values = [data['time'], data['pressure'], data['temperature']]
             appendFile(filePath, 'row', fields, values)
