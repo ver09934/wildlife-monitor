@@ -2,39 +2,43 @@
 This project is designed to detect the presence of wildlife and record video footage and data of the events. Each camera unit pushes the footage and data to a sever, which displays the aggregated data in a user-friendly web frontend. The individual units are based on the Raspberry Pi 3 Model B+ with the Camera Module V2, though it could likely be made to work on other versions without much trouble.
 
 ## Connections
-Below are instructions on how to connect the various sensors to the Raspberry Pi. A helpful reference for the pinout can be found at [pinout.xyz](https://pinout.xyz/), or with a quick search online.
+Below are instructions on how to connect the various sensors to the Raspberry Pi. Helpful reference fors the pinout can be found at [pinout.xyz](https://pinout.xyz/), with a quick search online, or embedded below.
+
+![link](https://www.raspberrypi-spy.co.uk/wp-content/uploads/2014/07/Raspberry-Pi-GPIO-Layout-Model-B-Plus-rotated.png)
 
 ### PIR Sensor
 The units use the the HC-SR501 PIR Motion Sensor, which is readily available at a number of online retailers. This should be connected as follows:
-* TODO
-
-<!--
-Eventually, the camera may have a part in the motion detection as well...
--->
+* VCC of the PIR sensor goes to +5V on the Pi (such as physical pin 4)
+* GND of the PIR sensor goes to Ground on the pi (such as physical pin 6)
+* The signal out pin of the PIR sensor goes to BCM 17 on the Pi
 
 ### Barometric Pressure/Altitude/Temperature Sensor
 The units use the MPL3115A2 I2C Barometric Pressure/Altitude/Temperature Sensor, available [here](https://www.adafruit.com/product/1893). This should be connected as follows:
-* (TODO)
+* Vin on the Baro goes to +3.3V (such as physical pin 1)
+* GND on the Baro goes to Ground on the Pi (such as physical pin 14)
+* SCL on the Baro goes to BCM 3 (SCL) on the Pi
+* SDA on the Baro goes to BCM 2 (SDA) on the Pi
 
 ### Camera
-The camera is connected as shown in the Raspberry Pi documentation [here](https://projects.raspberrypi.org/en/projects/getting-started-with-picamera/4).
+The camera is connected as shown in the Raspberry Pi documentation [here](https://projects.raspberrypi.org/en/projects/getting-started-with-picamera/4), with the ribbon cable being connected to the camera connector on the board.
 
 ### LED
-Optionally, an led can be attached to BCM 4 and ground in series with a 100 ohm resistor. In the curent code, this LED indicates when motion is detected and the camera is recording.
+Optionally, an led can be attached to BCM 4 and a ground pin (such as physical pin 9) in series with a 100 ohm resistor. (BCM 4 has a ground pin directly below it). In the curent code, this LED indicates when motion is detected and the camera is recording.
 
 <!--
 ## Central Webserver Setup
--->
+Dockerimage / Setup / Dependencies / Clone / XML List
 
-<!--
-## Setup / Running
-(This will be updated once there is something to run).
+## Setup
+Several files must be created (xml giving pi codename, YT key)
+(TODO: Put key in XML file with name?)
+
+## Running
+Currently, to run the script on the Pi end, clone this repository to the Pi, install the dependencies (TODO)
+, navigate to the backend directory, and run the script, perhaps in a tmux session, with `$ python3 -B sensors-threaded.py`.
+
+The '-B' should be noted if a dockerized version is ever created.
 -->
 
 ## Notes
 To prevent `.pyc` files or `__pycache__` directories from being created, run python with the `-B` option.
-
-<!--
-This should be noted if a dockerized version is ever created.
--->
-
