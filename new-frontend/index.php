@@ -29,6 +29,7 @@
               echo '<tr>';
               echo '<td>' . $dirname . '</td>';
               echo '<td>' . '<a href="unit.php?pidata=' . $dirname . '">unit.php?pidata=' . $dirname . '</a>' . '</td>';
+              // echo '<td>' . '<a href="unit.php?pidata=' . $dirname . '">' . $dirname . '</a></td>';
               echo '</tr>';
           }
         ?>
