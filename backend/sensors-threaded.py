@@ -98,6 +98,7 @@ def main():
     threads.append(threading.Thread(target=dataMotionThread))
     # threads.append(threading.Thread(target = cameraStreamThread, args=(camera,)))
     threads.append(threading.Thread(target = dataIntervalThread))
+    threads.append(threading.Thread(target = filesyncThread))
 
     for thread in threads:
         thread.start()
@@ -287,6 +288,8 @@ def cameraRecordThread(cameraIn):
         sync.set()
         
 def filesyncThread():
+
+    print("--- Filesync Thread Started ---")
       
     while True:
         
@@ -295,7 +298,6 @@ def filesyncThread():
         sync.clear()
         # This thread clears sync, since multiple other threads could set it
 
-        
 '''
 Threads to add:
 - file transfer using rsync (could just make this a cron job...)
