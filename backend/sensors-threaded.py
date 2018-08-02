@@ -8,10 +8,11 @@ import atexit # For exit handling
 import threading
 import queue
 import datetime
+import xml.etree.ElementTree as ElementTree
 
 # custom modules
 import MPL3115A2 as baro
-from lameXMLFormatter import *
+from lameXMLFormatter import *'
 
 DATA_DIR = '../data/' # Needs '/' at the end
 VIDEO_SUBDIR = 'videos/' # Needs '/' at the end
@@ -22,9 +23,22 @@ LED_PIN = 4
 
 CONVERT_CMD = "bash videoconvert.sh " + DATA_DIR + VIDEO_SUBDIR
 YOUTUBE="rtmp://a.rtmp.youtube.com/live2/"
-with open("yt-stream-key.txt", "r") as f:
-    KEY = f.read()
 STREAM_CMD = 'avconv -re -ar 44100 -ac 2 -acodec pcm_s16le -f s16le -ac 2 -i /dev/zero -f h264 -i - -vcodec copy -acodec aac -ab 128k -g 50 -strict experimental -f flv ' + YOUTUBE + KEY
+
+INFO_FILE = '../info.xml'
+
+tree = ElementTree.parse(INFO_FILE)
+root = tree.getroot()
+info = {}
+for child in root:
+    info[child.tag] = child.text
+
+#with open("yt-stream-key.txt", "r") as f:
+#    KEY = f.read()    
+KEY = info['ytstreamkey']
+
+SYNC_MKDIR_CMD = "ssh " + info['serveruser'] + "@" + info['serverdomain'] + " 'sudo mkdir -p " + info['serverdatadir'] + "'"
+SYNC_CMD = "rsync -a --delete" + DATA_DIR + " " info['serveruser'] + "@" + info['serverdomain'] + ":" + info['serverdatadir'] + info['name']
 
 HIGHRES_VERT = 1280
 HIGHRES_HORIZ = 720
@@ -38,6 +52,7 @@ CAM_FPS = 25
 motionStart = threading.Event() # Set during motion, clear when no motion
 motionEnd = threading.Event() # Set when no motion, clear during motion
 minutely = threading.Event() # Set and immediately cleared every minute
+sync = threading.Event() # Set and cleared when the remote files should be synchronized
 
 # queues
 timeQueue = queue.Queue() # To insure video + xml files have corresponding filenames
@@ -223,6 +238,8 @@ def dataIntervalThread():
             fields = ['time', 'pressure', 'temperature']
             values = [data['time'], data['pressure'], data['temperature']]
             appendFile(filePath, 'row', fields, values)
+            
+            # sync.set()
 
 def cameraStreamThread(cameraIn):
                 
@@ -259,7 +276,26 @@ def cameraRecordThread(cameraIn):
         cameraIn.stop_recording(splitter_port=2)
         print("Recording end...")
                 
-        subprocess.Popen(CONVERT_CMD, shell=True)
+        subprocess.Popen(CONVERT_CMD, shell=True, stdout=subprocess.DEVNULL)
+        
+        # sync.set()
+        
+def filesyncThread():
+    
+    firstTime = True
+  
+    while True:
+      
+        sync.wait()
+    
+        if firstTime:
+            subprocess.Popen(SYNC_MKDIR_CMD, shell=True, stdout=subprocess.DEVNULL)
+            firstTime = False
+        
+        subprocess.Popen(SYNC_CMD, shell=True, stdout=subprocess.DEVNULL)
+        sync.clear()
+        # This thread clears sync, since multiple other threads could set it
+
         
 '''
 Threads to add:
