@@ -27,6 +27,11 @@ Optionally, an led can be attached to BCM 4 and a ground pin (such as physical p
 
 <!--
 ## Central Webserver Setup
+
+(After server setup)
+
+Create the gitignored directory new-frontend/data, which is where all the individual Pis will send their data to. In addition, insure that this directory is owned by the user that the client Pis will be using to login to the server to sync their data with it.
+
 Dockerimage / Setup / Dependencies / Clone / XML List
 
 ## Setup
