@@ -32,13 +32,19 @@ root = tree.getroot()
 info = {}
 for child in root:
     info[child.tag] = child.text
+    
+# insure server data dir ends with "/"
+if not info['serverdatadir'].endswith('/')
+    info['serverdatadir'] += '/'
 
 #with open("yt-stream-key.txt", "r") as f:
 #    KEY = f.read()    
 KEY = info['ytstreamkey']
 
-SYNC_MKDIR_CMD = "ssh " + info['serveruser'] + "@" + info['serverdomain'] + " 'sudo mkdir -p " + info['serverdatadir'] + "'"
 SYNC_CMD = "rsync -a --delete" + DATA_DIR + " " info['serveruser'] + "@" + info['serverdomain'] + ":" + info['serverdatadir'] + info['name']
+
+#print(SYNC_CMD)
+#time.sleep(1000)
 
 HIGHRES_VERT = 1280
 HIGHRES_HORIZ = 720
@@ -281,17 +287,10 @@ def cameraRecordThread(cameraIn):
         # sync.set()
         
 def filesyncThread():
-    
-    firstTime = True
-  
+      
     while True:
       
         sync.wait()
-    
-        if firstTime:
-            subprocess.Popen(SYNC_MKDIR_CMD, shell=True, stdout=subprocess.DEVNULL)
-            firstTime = False
-        
         subprocess.Popen(SYNC_CMD, shell=True, stdout=subprocess.DEVNULL)
         sync.clear()
         # This thread clears sync, since multiple other threads could set it
