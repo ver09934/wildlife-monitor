@@ -31,11 +31,6 @@
               echo '<td>' . '<a href="unit.php?pidata=' . $dirname . '">unit.php?pidata=' . $dirname . '</a>' . '</td>';
               echo '</tr>';
           }
-          /*
-          for ($x = 0; $x < count($dirs); $x++) {
-              echo "The number is: $x <br>";
-          }
-          */
         ?>
       
       </table>

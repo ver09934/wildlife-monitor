@@ -41,8 +41,8 @@
       
       <h3>Temperature/Barometric Pressure</h3>
       
-      <div id="temp_chart" style="width: 600px; height: 400px" class="datagraph"></div>
-      <div id="pres_chart" style="width: 500px; height: 400px" class="datagraph"></div>
+      <div id="temp_chart" style="width: 650px; height: 450px" class="datagraph"></div>
+      <div id="pres_chart" style="width: 650px; height: 450px" class="datagraph"></div>
       
       <h2>Livestream</h2>
       
@@ -57,7 +57,7 @@
           <th>Time</th>
           <th>Temperature</th>
           <th>Pressure</th>
-          <th>Metadata File</th>
+          <!-- <th>Metadata File</th> -->
         </tr>
       
         <?php
@@ -119,7 +119,7 @@
                 echo '<td>' . '<pre>' . 'File not available' . '</pre>' . '</td>';
             }
                                
-            echo '<td>' . '<pre>' . '<a href="' . $videopath . $xmlfiles[$x] . '">' . $xmlfiles[$x] . '</a>' . '</pre>' . '</td>';
+            // echo '<td>' . '<pre>' . '<a href="' . $videopath . $xmlfiles[$x] . '">' . $xmlfiles[$x] . '</a>' . '</pre>' . '</td>';
             
             echo '</tr>';
           }
