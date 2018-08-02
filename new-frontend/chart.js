@@ -1,10 +1,20 @@
+if (typeof currentlogpath === 'undefined') {
+    console.log("chart.js didn't get a currentlogpath variable...");
+    throw new Error();
+}
+
+if (typeof variable !== 'undefined') {
+    // the variable is defined
+}
+
 var xhttp = new XMLHttpRequest();
 xhttp.onreadystatechange = function() {
     if (this.readyState == 4 && this.status == 200) {
         readData(xhttp);
     }
 };
-xhttp.open("GET","data/datalogs/current_log-2018-07-31.xml", true);
+// xhttp.open("GET","data/data-unit1/datalogs/current_log-2018-07-31.xml", true);
+xhttp.open("GET", currentlogpath, true);
 xhttp.send();
 
 function readData(xml) {

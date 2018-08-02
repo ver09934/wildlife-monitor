@@ -18,12 +18,26 @@
       <table>
         <tr>
           <th>Name</th>
-          <th>Page Link</th> 
+          <th>Page Link</th>
         </tr>
-        <tr>
-          <td>Test Unit</td>
-          <td><a href="testunit/">testunit/</a></td>
-        </tr>
+        
+        <?php
+          $dirs = glob($somePath . 'data/*' , GLOB_ONLYDIR);
+          
+          foreach ($dirs as $dir) {
+              $dirname = basename($dir);
+              echo '<tr>';
+              echo '<td>' . $dirname . '</td>';
+              echo '<td>' . '<a href="unit.php?pidata=' . $dirname . '">unit.php?pidata=' . $dirname . '</a>' . '</td>';
+              echo '</tr>';
+          }
+          /*
+          for ($x = 0; $x < count($dirs); $x++) {
+              echo "The number is: $x <br>";
+          }
+          */
+        ?>
+      
       </table>
 
     </div>

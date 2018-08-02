@@ -2,13 +2,36 @@
 <html>
   <head>
     <title>Test Unit</title>
-    <link rel="stylesheet" type="text/css" href="../main.css">
+    <link rel="stylesheet" type="text/css" href="main.css">
+    <script type="text/javascript">
+    <?php
+      $datadir = 'data/';
+      $unit = $_GET["pidata"] . '/';
+      $videosubdir = 'videos/';
+      $logsubdir = 'datalogs/';
+
+      $videopath = $datadir . $unit . $videosubdir;
+      $logpath = $datadir . $unit . $logsubdir;
+      
+      $logfiles = scandir($logpath);
+      $logfiles = array_diff($logfiles, array('.', '..'));
+    
+      // rescale indices
+      $logfiles = array_values($logfiles);
+      
+      // print_r($logfiles);
+
+      $currentlogpath = $logfiles[count($logfiles) - 1];
+
+      echo 'var currentlogpath = "' . $datadir . $unit . $logsubdir . $currentlogpath . '";';
+    ?>
+    </script>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script type="text/javascript" src="chart.js"></script>
   </head>
   <body>
     <?php
-      include '../menu.php';
+      include 'menu.php';
     ?>
     <div id="main">
       
@@ -38,10 +61,10 @@
         </tr>
       
         <?php
-
-          $path = 'data/videos/';
-          $files = scandir($path);
+                 
+          $files = scandir($videopath);
           $files = array_diff($files, array('.', '..'));
+          $files = array_values($files); // rescale indices to 0
           
           $mp4files = array();
           $xmlfiles = array();
@@ -80,12 +103,12 @@
               echo '<td>' . '<pre>' . $mp4files[$x] . '</pre>' . '</td>';
             }
             else {
-              echo '<td>' . '<pre>' . '<a href="' . $path . $mp4files[$x] . '">' . $mp4files[$x] . '</a>' . '</pre>' . '</td>';
+              echo '<td>' . '<pre>' . '<a href="' . $videopath . $mp4files[$x] . '">' . $mp4files[$x] . '</a>' . '</pre>' . '</td>';
             }
             
             // Server needs php-xml to be installed
-            if (file_exists($path . $xmlfiles[$x])) {
-                $xml = simplexml_load_file($path . $xmlfiles[$x]);
+            if (file_exists($videopath . $xmlfiles[$x])) {
+                $xml = simplexml_load_file($videopath . $xmlfiles[$x]);
                 echo '<td>' . '<pre>' . $xml->row[0]->time . '</pre>' . '</td>';
                 echo '<td>' . '<pre>' . $xml->row[0]->temperature . ' &deg;C' . '</pre>' . '</td>';
                 echo '<td>' . '<pre>' . $xml->row[0]->pressure . ' Pa' . '</pre>' . '</td>';
@@ -96,7 +119,7 @@
                 echo '<td>' . '<pre>' . 'File not available' . '</pre>' . '</td>';
             }
                                
-            echo '<td>' . '<pre>' . '<a href="' . $path . $xmlfiles[$x] . '">' . $xmlfiles[$x] . '</a>' . '</pre>' . '</td>';
+            echo '<td>' . '<pre>' . '<a href="' . $videopath . $xmlfiles[$x] . '">' . $xmlfiles[$x] . '</a>' . '</pre>' . '</td>';
             
             echo '</tr>';
           }
