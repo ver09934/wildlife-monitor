@@ -12,7 +12,7 @@ import xml.etree.ElementTree as ElementTree
 
 # custom modules
 import MPL3115A2 as baro
-from lameXMLFormatter import *'
+from lameXMLFormatter import *
 
 DATA_DIR = '../data/' # Needs '/' at the end
 VIDEO_SUBDIR = 'videos/' # Needs '/' at the end
@@ -21,10 +21,6 @@ DATALOG_SUBDIR = 'datalogs/' # Needs '/' at the end
 PIR_PIN = 17
 LED_PIN = 4
 
-CONVERT_CMD = "bash videoconvert.sh " + DATA_DIR + VIDEO_SUBDIR
-YOUTUBE="rtmp://a.rtmp.youtube.com/live2/"
-STREAM_CMD = 'avconv -re -ar 44100 -ac 2 -acodec pcm_s16le -f s16le -ac 2 -i /dev/zero -f h264 -i - -vcodec copy -acodec aac -ab 128k -g 50 -strict experimental -f flv ' + YOUTUBE + KEY
-
 INFO_FILE = '../info.xml'
 
 tree = ElementTree.parse(INFO_FILE)
@@ -32,25 +28,29 @@ root = tree.getroot()
 info = {}
 for child in root:
     info[child.tag] = child.text
-    
+
 # insure server data dir ends with "/"
-if not info['serverdatadir'].endswith('/')
+if not info['serverdatadir'].endswith('/'):
     info['serverdatadir'] += '/'
 
+SYNC_CMD = "rsync -a --delete " + DATA_DIR + " " + info['serveruser'] + "@" + info['serverdomain'] + ":" + info['serverdatadir'] + info['name']
+
 #with open("yt-stream-key.txt", "r") as f:
-#    KEY = f.read()    
+#    KEY = f.read()
 KEY = info['ytstreamkey']
 
-SYNC_CMD = "rsync -a --delete" + DATA_DIR + " " info['serveruser'] + "@" + info['serverdomain'] + ":" + info['serverdatadir'] + info['name']
-
-#print(SYNC_CMD)
-#time.sleep(1000)
+CONVERT_CMD = "bash videoconvert.sh " + DATA_DIR + VIDEO_SUBDIR
+YOUTUBE="rtmp://a.rtmp.youtube.com/live2/"
+STREAM_CMD = 'avconv -re -ar 44100 -ac 2 -acodec pcm_s16le -f s16le -ac 2 -i /dev/zero -f h264 -i - -vcodec copy -acodec aac -ab 128k -g 50 -strict experimental -f flv ' + YOUTUBE + KEY
 
 HIGHRES_VERT = 1280
 HIGHRES_HORIZ = 720
 LOWRES_VERT = 480
 LOWRES_HORIZ = 360
 CAM_FPS = 25
+
+#print(SYNC_CMD)
+#time.sleep(1000)
 
 # Define semaphores, events, locks, queues, etc. here so they don't have to be passed to methods as arguments
 
@@ -85,12 +85,12 @@ def main():
     mkdir(DATA_DIR + VIDEO_SUBDIR)
     mkdir(DATA_DIR + DATALOG_SUBDIR)
     # --------------------------------
-    
+
     # Register exit handler method
     atexit.register(exit_handler, camera)
     # atexit.register(goodbye, 'Donny', 'nice') # Can pass args when registering...
 
-    # Start threads    
+    # Start threads
     threads = []
     threads.append(threading.Thread(target=timerThread))
     threads.append(threading.Thread(target=motionThread))
@@ -98,7 +98,7 @@ def main():
     threads.append(threading.Thread(target=dataMotionThread))
     # threads.append(threading.Thread(target = cameraStreamThread, args=(camera,)))
     threads.append(threading.Thread(target = dataIntervalThread))
-    
+
     for thread in threads:
         thread.start()
 
@@ -141,7 +141,7 @@ def timerThread():
 # when motion is detected (based off PIR and camera stream), set the motion detected event, which other threads are listening for
 def motionThread():
     
-    print('--- Motion Detection Thread Started ---')    
+    print('--- Motion Detection Thread Started ---')
 
     motionDetected = False
     triggerCount = 0
@@ -208,7 +208,7 @@ def dataMotionThread():
         values = [data['time'], data['pressure'], data['temperature']]
         
         createFile(dataPath, 'data') # 'data' is a string, not the variable data
-        appendFile(dataPath, 'row', fields, values)       
+        appendFile(dataPath, 'row', fields, values)
         
         motionEnd.wait()
 
@@ -228,9 +228,9 @@ def dataIntervalThread():
         createFile(filePath, 'data')
     
     while True:
-        
+            
             minutely.wait()
-                
+            
             baroLock.acquire()
             baroData = baro.getData()
             baroLock.release()
@@ -245,10 +245,10 @@ def dataIntervalThread():
             values = [data['time'], data['pressure'], data['temperature']]
             appendFile(filePath, 'row', fields, values)
             
-            # sync.set()
+            sync.set()
 
 def cameraStreamThread(cameraIn):
-                
+    
     print("--- Streaming Thread Started ---")
 
     # NOTE: If there are streaming issues and the avconv/ffmpeg output is needed, remove the stdout=subprocess.DEVNULL argument, which silences the command
@@ -276,20 +276,20 @@ def cameraRecordThread(cameraIn):
         
         print("Recording start...")
         cameraIn.start_recording(videoPath, splitter_port=2)
-                
+        
         motionEnd.wait()
         
         cameraIn.stop_recording(splitter_port=2)
         print("Recording end...")
-                
+         
         subprocess.Popen(CONVERT_CMD, shell=True, stdout=subprocess.DEVNULL)
         
-        # sync.set()
+        sync.set()
         
 def filesyncThread():
       
     while True:
-      
+        
         sync.wait()
         subprocess.Popen(SYNC_CMD, shell=True, stdout=subprocess.DEVNULL)
         sync.clear()
