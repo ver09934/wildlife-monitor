@@ -58,7 +58,8 @@ CAM_FPS = 25
 motionStart = threading.Event() # Set during motion, clear when no motion
 motionEnd = threading.Event() # Set when no motion, clear during motion
 minutely = threading.Event() # Set and immediately cleared every minute
-sync = threading.Event() # Set and cleared when the remote files should be synchronized
+sync = threading.Event() # Set when the remote files should be synchronized
+vidconvert = threading.Event() # Set when the video conversion should run
 
 # queues
 timeQueue = queue.Queue() # To insure video + xml files have corresponding filenames
@@ -98,6 +99,7 @@ def main():
     threads.append(threading.Thread(target=dataMotionThread))
     # threads.append(threading.Thread(target = cameraStreamThread, args=(camera,)))
     threads.append(threading.Thread(target = dataIntervalThread))
+    threads.append(threading.Thread(target = videoconvertThread))
     threads.append(threading.Thread(target = filesyncThread))
 
     for thread in threads:
@@ -218,17 +220,11 @@ def dataIntervalThread():
    
     print("--- Regular Interval Data Thread Started ---")
     
-    # print() # print('\n', end='')
-    # print("Data interval thread got lock (not really)")
-    # print("Data interval thread collecting data (not really)")
-    # TODO: Check if logfile already exists...
-    # Idea: 1 log per day? Check if it exists, if not, make it...
-    
-    filePath = DATA_DIR + DATALOG_SUBDIR + 'current_log-' + time.strftime('%Y-%m-%d') + '.xml'
-    if not os.path.isfile(filePath):
-        createFile(filePath, 'data')
-    
     while True:
+      
+            filePath = DATA_DIR + DATALOG_SUBDIR + 'current_log-' + time.strftime('%Y-%m-%d') + '.xml'
+            if not os.path.isfile(filePath):
+                createFile(filePath, 'data')
             
             minutely.wait()
             
@@ -269,8 +265,7 @@ def cameraRecordThread(cameraIn):
         
         motionStart.wait()
         
-        # get timeString from motion data thread
-        timeString = timeQueue.get()
+        timeString = timeQueue.get() # get timeString from motion data thread
         timeQueue.queue.clear() # Clear the queue, just for kicks...
         
         videoPath = DATA_DIR + VIDEO_SUBDIR + 'video_' + timeString + '.h264'
@@ -282,10 +277,20 @@ def cameraRecordThread(cameraIn):
         
         cameraIn.stop_recording(splitter_port=2)
         print("Recording end...")
-         
-        subprocess.Popen(CONVERT_CMD, shell=True, stdout=subprocess.DEVNULL)
-        
+  
+        vidconvert.set()
         sync.set()
+        
+def videoconvertThread():
+    
+    print("--- Video Conversion Thread Started ---")
+    
+    while True:
+        
+        vidconvert.wait()
+        sp = subprocess.Popen(CONVERT_CMD, shell=True, stdout=subprocess.DEVNULL)
+        sp.wait()
+        vidconvert.clear()
         
 def filesyncThread():
 
