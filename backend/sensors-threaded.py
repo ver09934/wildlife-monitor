@@ -294,7 +294,10 @@ def filesyncThread():
     while True:
         
         sync.wait()
-        subprocess.Popen(SYNC_CMD, shell=True, stdout=subprocess.DEVNULL)
+        print("- Started sync -")
+        sp = subprocess.Popen(SYNC_CMD, shell=True, stdout=subprocess.DEVNULL)
+        sp.wait()
+        print("- Ended sync -")
         sync.clear()
         # This thread clears sync, since multiple other threads could set it
 
