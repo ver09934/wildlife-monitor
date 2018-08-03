@@ -33,7 +33,7 @@ for child in root:
 if not info['serverdatadir'].endswith('/'):
     info['serverdatadir'] += '/'
 
-SYNC_CMD = "rsync -az --delete --exclude '*.h264' " + DATA_DIR + " " + info['serveruser'] + "@" + info['serverdomain'] + ":" + info['serverdatadir'] + info['name']
+SYNC_CMD = "rsync -az --delete --exclude '*.h264' --exclude '.*' " + DATA_DIR + " " + info['serveruser'] + "@" + info['serverdomain'] + ":" + info['serverdatadir'] + info['name']
 
 #with open("yt-stream-key.txt", "r") as f:
 #    KEY = f.read()
