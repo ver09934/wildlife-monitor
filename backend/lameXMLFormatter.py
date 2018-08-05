@@ -72,6 +72,3 @@ def appendFileChildren(filepath, parentTag, childTags, childData):
     writeString += lastLine
 
     f.write(writeString)
-
-def removeElementLine():
-    pass

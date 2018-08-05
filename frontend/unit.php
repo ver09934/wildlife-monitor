@@ -15,10 +15,8 @@
       
       $logfiles = scandir($logpath);
       $logfiles = array_diff($logfiles, array('.', '..'));
-    
-      // rescale indices
-      $logfiles = array_values($logfiles);
-      
+      $logfiles = array_values($logfiles); // rescale indices
+
       // print_r($logfiles);
 
       $currentlogpath = $logfiles[count($logfiles) - 1];
@@ -82,8 +80,8 @@
                       
           }
 
-          $vidNotFound = "Video currently unavailable";
-          $dataNotFound = "Data currently unavailable";
+          $vidNotFound = "Video unavailable";
+          $dataNotFound = "Data unavailable";
           
           if (count($xmlfiles) > count($mp4files)) {
                       
@@ -109,13 +107,13 @@
           $mp4files = array_reverse($mp4files);
           $xmlfiles = array_reverse($xmlfiles);
                     
-          for ($x = 0; $x < count($xmlfiles); $x++) {
+          for ($i = 0; $i < count($xmlfiles); $i++) {
             echo '<tr>';
             
-            echo '<td>' . strval(count($xmlfiles) - $x) . '</td>';
+            echo '<td>' . strval(count($xmlfiles) - $i) . '</td>';
             
-            if ($mp4files[$x] != $vidNotFound) {
-              echo '<td>' . '<pre>' . '<a href="' . $videopath . $mp4files[$x] . '">' . $mp4files[$x] . '</a>' . '</pre>' . '</td>';
+            if ($mp4files[$i] != $vidNotFound) {
+              echo '<td>' . '<pre>' . '<a href="' . $videopath . $mp4files[$i] . '">' . $mp4files[$i] . '</a>' . '</pre>' . '</td>';
             }
             else {
               echo '<td>' . '<pre>' . $vidNotFound . '</pre>' . '</td>';
@@ -123,44 +121,30 @@
             
             // if (file_exists($videopath . $xmlfiles[$x])) {
 
-            if ($xmlfiles[$x] != $dataNotFound) {
-                $xml = simplexml_load_file($videopath . $xmlfiles[$x]);
+            if ($xmlfiles[$i] != $dataNotFound) {
 
-                // $fields = array('time', 'temperature', 'pressure', 'length');
-                // $units = array('', ' &deg;C', ' Pa', '');
-                // for ($x = 0; $x < 4; $x++) {}
-                
-                if ($xml->row[0]->time != "") {
-                  echo '<td>' . '<pre>' . $xml->row[0]->time . '</pre>' . '</td>';
-                }
-                else {
-                  echo '<td>' . '<pre>' . $dataNotFound . '</pre>' . '</td>';
-                }
+                $xml = simplexml_load_file($videopath . $xmlfiles[$i]);
 
-                if ($xml->row[0]->temperature != "") {
-                  echo '<td>' . '<pre>' . $xml->row[0]->temperature . ' &deg;C' . '</pre>' . '</td>';
-                }
-                else {
-                  echo '<td>' . '<pre>' . $dataNotFound . '</pre>' . '</td>';
-                }
+                $fields = array('time', 'temperature', 'pressure', 'length');
+                $units = array('', ' &deg;C', ' Pa', '');
 
-                if ($xml->row[0]->pressure != "") {
-                  echo '<td>' . '<pre>' . $xml->row[0]->pressure . ' Pa' . '</pre>' . '</td>';
-                }
-                else {
-                  echo '<td>' . '<pre>' . $dataNotFound . '</pre>' . '</td>';
+                for ($j = 0; $j < 4; $j++) {
+
+                  $field = $fields[$j];
+                  $unit = $units[$j];
+                  
+                  if ($xml->row[0]->$field != "") {
+                    echo '<td>' . '<pre>' . $xml->row[0]->$field . $unit . '</pre>' . '</td>';
+                  }
+                  else {
+                    echo '<td>' . '<pre>' . $dataNotFound . '</pre>' . '</td>';
+                  }
+                  
                 }
 
-                if ($xml->row[0]->length != "") {
-                  echo '<td>' . '<pre>' . $xml->row[0]->length . '</pre>' . '</td>';
-                }
-                else {
-                  echo '<td>' . '<pre>' . $dataNotFound . '</pre>' . '</td>';
-                }
-
-
-            } else {
-              for ($x = 0; $x < 4; $x++) {
+            }
+            else {
+              for ($k = 0; $k < 4; $k++) {
                 echo '<td>' . '<pre>' . $dataNotFound . '</pre>' . '</td>';
               } 
             }
