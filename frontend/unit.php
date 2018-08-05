@@ -80,17 +80,31 @@
             }
                       
           }
+
+          $vidNotFound = "Video currently unavailable";
+          $dataNotFound = "Data currently unavailable";
           
           if (count($xmlfiles) > count($mp4files)) {
                       
             $diff = count($xmlfiles) - count($mp4files);
             
             for ($x = 0; $x < $diff; $x++) {
-                array_push($mp4files, "File currently unavailable");
+                array_push($mp4files, $vidNotFound);
             }
             
           }
+          else if (count($mp4files) > count($xmlfiles)) {
+
+            $diff = count($mp4files) - count($xmlfiles);
+            
+            for ($x = 0; $x < $diff; $x++) {
+                array_push($xmlfiles, $dataNotFound);
+            }
+
+          }
           
+          // $mp4files and $xmlfiles are now of equal length
+
           $mp4files = array_reverse($mp4files);
           $xmlfiles = array_reverse($xmlfiles);
                     
@@ -99,24 +113,24 @@
             
             echo '<td>' . strval(count($xmlfiles) - $x) . '</td>';
             
-            if ($mp4files[$x] == "File currently unavailable") {
-              echo '<td>' . '<pre>' . $mp4files[$x] . '</pre>' . '</td>';
-            }
-            else {
+            if ($mp4files[$x] != $vidNotFound) {
               echo '<td>' . '<pre>' . '<a href="' . $videopath . $mp4files[$x] . '">' . $mp4files[$x] . '</a>' . '</pre>' . '</td>';
             }
+            else {
+              echo '<td>' . '<pre>' . $vidNotFound . '</pre>' . '</td>';
+            }
             
-            // Server needs php-xml to be installed
-            if (file_exists($videopath . $xmlfiles[$x])) {
+            // if (file_exists($videopath . $xmlfiles[$x])) {
+            if ($xmlfiles[$x] != $dataNotFound) {
                 $xml = simplexml_load_file($videopath . $xmlfiles[$x]);
                 echo '<td>' . '<pre>' . $xml->row[0]->time . '</pre>' . '</td>';
                 echo '<td>' . '<pre>' . $xml->row[0]->temperature . ' &deg;C' . '</pre>' . '</td>';
                 echo '<td>' . '<pre>' . $xml->row[0]->pressure . ' Pa' . '</pre>' . '</td>';
                 
             } else {
-                echo '<td>' . '<pre>' . 'File not available' . '</pre>' . '</td>';
-                echo '<td>' . '<pre>' . 'File not available' . '</pre>' . '</td>';
-                echo '<td>' . '<pre>' . 'File not available' . '</pre>' . '</td>';
+                echo '<td>' . '<pre>' . $dataNotFound . '</pre>' . '</td>';
+                echo '<td>' . '<pre>' . $dataNotFound . '</pre>' . '</td>';
+                echo '<td>' . '<pre>' . $dataNotFound . '</pre>' . '</td>';
             }
                                
             // echo '<td>' . '<pre>' . '<a href="' . $videopath . $xmlfiles[$x] . '">' . $xmlfiles[$x] . '</a>' . '</pre>' . '</td>';
