@@ -57,6 +57,7 @@
           <th>Time</th>
           <th>Temperature</th>
           <th>Pressure</th>
+          <th>Length</th>
           <!-- <th>Metadata File</th> -->
         </tr>
       
@@ -121,16 +122,27 @@
             }
             
             // if (file_exists($videopath . $xmlfiles[$x])) {
+
             if ($xmlfiles[$x] != $dataNotFound) {
                 $xml = simplexml_load_file($videopath . $xmlfiles[$x]);
-                echo '<td>' . '<pre>' . $xml->row[0]->time . '</pre>' . '</td>';
-                echo '<td>' . '<pre>' . $xml->row[0]->temperature . ' &deg;C' . '</pre>' . '</td>';
-                echo '<td>' . '<pre>' . $xml->row[0]->pressure . ' Pa' . '</pre>' . '</td>';
+
+                $fields = array(time, temperature, pressure, length);
                 
+                foreach ($fields as $field) {
+
+                  if ($xml->row[0]->$field != "") {
+                    echo '<td>' . '<pre>' . $xml->row[0]->$field . '</pre>' . '</td>';
+                  }
+                  else {
+                    echo '<td>' . '<pre>' . $dataNotFound . '</pre>' . '</td>';
+                  }
+
+                }
+
             } else {
+              for ($x = 0; $x < 4; $x++) {
                 echo '<td>' . '<pre>' . $dataNotFound . '</pre>' . '</td>';
-                echo '<td>' . '<pre>' . $dataNotFound . '</pre>' . '</td>';
-                echo '<td>' . '<pre>' . $dataNotFound . '</pre>' . '</td>';
+              } 
             }
                                
             // echo '<td>' . '<pre>' . '<a href="' . $videopath . $xmlfiles[$x] . '">' . $xmlfiles[$x] . '</a>' . '</pre>' . '</td>';

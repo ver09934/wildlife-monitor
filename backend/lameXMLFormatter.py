@@ -14,7 +14,8 @@ def createFile(filepath, superParentTag):
         f.write(writeData)
 
 # append one top-level element to the xml file
-def appendFile(filepath, parentTag, parentData):
+# if nested, append one child element to the last top-level element... in a bodged-together fashion
+def appendFile(filepath, parentTag, parentData, nested):
 
     # open file for reading and writing
     f = open(filepath, 'r')
@@ -23,6 +24,11 @@ def appendFile(filepath, parentTag, parentData):
     
     lastLine = lines[len(lines) - 1]
     del lines[len(lines) - 1]
+
+    secondLastLine = ''
+    if nested:
+        secondLastLine = lines[len(lines) - 1]
+        del lines[len(lines) - 1]
     
     f.close()
     f = open(filepath, 'w')
@@ -31,7 +37,7 @@ def appendFile(filepath, parentTag, parentData):
         f.write(line)
         
     writeString = '  ' + '<' + parentTag + '>' + str(parentData) + '</' + parentTag + '>' + '\n'
-    writeString += lastLine
+    writeString += secondLastLine + lastLine
 
     f.write(writeString)
 
@@ -66,3 +72,6 @@ def appendFileChildren(filepath, parentTag, childTags, childData):
     writeString += lastLine
 
     f.write(writeString)
+
+def removeElementLine():
+    pass

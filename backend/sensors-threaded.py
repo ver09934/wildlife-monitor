@@ -173,7 +173,6 @@ def motionThread():
             motionStart.clear()
             motionEnd.set()
 
-
 # record data when motion is detected (waits for lock on baro), higher priority than dataIntervalThread
 # Creates a separate file for each event, with name corresponding to the created video file
 def dataMotionThread():
@@ -183,6 +182,8 @@ def dataMotionThread():
     while True:
         
         motionStart.wait()
+
+        startTime = time.time()
                 
         # See "Mapping Types - dict" in the python3 documentation
         data = {}
@@ -209,6 +210,11 @@ def dataMotionThread():
         appendFileChildren(dataPath, 'row', fields, values)
         
         motionEnd.wait()
+
+        endTime = time.time()
+        diff = round(endTime - startTime, 3)
+        diffStr = str(datetime.timedelta(seconds=diff))
+        appendFile(dataPath, 'length', diffStr, True)
 
 # record data at regular interval (waits for lock on baro)
 def dataIntervalThread():
