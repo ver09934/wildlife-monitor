@@ -5,7 +5,7 @@
 
 # data directories
 /data
-/new-frontend/data
+/frontend/data
 
 # compiled python files
 *.pyc
