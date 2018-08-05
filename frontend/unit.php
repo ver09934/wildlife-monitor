@@ -126,18 +126,38 @@
             if ($xmlfiles[$x] != $dataNotFound) {
                 $xml = simplexml_load_file($videopath . $xmlfiles[$x]);
 
-                $fields = array(time, temperature, pressure, length);
+                // $fields = array('time', 'temperature', 'pressure', 'length');
+                // $units = array('', ' &deg;C', ' Pa', '');
+                // for ($x = 0; $x < 4; $x++) {}
                 
-                foreach ($fields as $field) {
-
-                  if ($xml->row[0]->$field != "") {
-                    echo '<td>' . '<pre>' . $xml->row[0]->$field . '</pre>' . '</td>';
-                  }
-                  else {
-                    echo '<td>' . '<pre>' . $dataNotFound . '</pre>' . '</td>';
-                  }
-
+                if ($xml->row[0]->time != "") {
+                  echo '<td>' . '<pre>' . $xml->row[0]->time . '</pre>' . '</td>';
                 }
+                else {
+                  echo '<td>' . '<pre>' . $dataNotFound . '</pre>' . '</td>';
+                }
+
+                if ($xml->row[0]->temperature != "") {
+                  echo '<td>' . '<pre>' . $xml->row[0]->temperature . ' &deg;C' . '</pre>' . '</td>';
+                }
+                else {
+                  echo '<td>' . '<pre>' . $dataNotFound . '</pre>' . '</td>';
+                }
+
+                if ($xml->row[0]->pressure != "") {
+                  echo '<td>' . '<pre>' . $xml->row[0]->pressure . ' Pa' . '</pre>' . '</td>';
+                }
+                else {
+                  echo '<td>' . '<pre>' . $dataNotFound . '</pre>' . '</td>';
+                }
+
+                if ($xml->row[0]->length != "") {
+                  echo '<td>' . '<pre>' . $xml->row[0]->length . '</pre>' . '</td>';
+                }
+                else {
+                  echo '<td>' . '<pre>' . $dataNotFound . '</pre>' . '</td>';
+                }
+
 
             } else {
               for ($x = 0; $x < 4; $x++) {
