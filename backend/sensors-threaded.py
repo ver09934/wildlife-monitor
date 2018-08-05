@@ -41,7 +41,7 @@ KEY = info['ytstreamkey']
 
 CONVERT_CMD = "bash videoconvert.sh " + DATA_DIR + VIDEO_SUBDIR
 YOUTUBE="rtmp://a.rtmp.youtube.com/live2/"
-STREAM_CMD = 'avconv -re -ar 44100 -ac 2 -acodec pcm_s16le -f s16le -ac 2 -i /dev/zero -f h264 -i - -vcodec copy -acodec aac -ab 128k -g 50 -strict experimental -f flv ' + YOUTUBE + KEY
+STREAM_CMD = 'avconv -loglevel quiet -re -ar 44100 -ac 2 -acodec pcm_s16le -f s16le -ac 2 -i /dev/zero -f h264 -i - -vcodec copy -acodec aac -ab 128k -g 50 -strict experimental -f flv ' + YOUTUBE + KEY
 
 HIGHRES_VERT = 1280
 HIGHRES_HORIZ = 720
@@ -92,7 +92,7 @@ def main():
     threads.append(threading.Thread(target=motionThread))
     threads.append(threading.Thread(target=cameraRecordThread, args=(camera,))) # Need the "," to make it a list
     threads.append(threading.Thread(target=dataMotionThread))
-    # threads.append(threading.Thread(target = cameraStreamThread, args=(camera,)))
+    threads.append(threading.Thread(target = cameraStreamThread, args=(camera,)))
     threads.append(threading.Thread(target = dataIntervalThread))
     threads.append(threading.Thread(target = videoconvertThread))
     threads.append(threading.Thread(target = filesyncThread))
