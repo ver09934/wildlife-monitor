@@ -49,10 +49,7 @@ LOWRES_VERT = 480
 LOWRES_HORIZ = 360
 CAM_FPS = 25
 
-#print(SYNC_CMD)
-#time.sleep(1000)
-
-# Define semaphores, events, locks, queues, etc. here so they don't have to be passed to methods as arguments
+# --- Define semaphores, events, locks, queues, etc. here so they don't have to be passed to methods as arguments ---
 
 # events
 motionStart = threading.Event() # Set during motion, clear when no motion
@@ -70,7 +67,6 @@ baroLock = threading.Lock()
 # setup camera, GPIO, and start threads
 def main():
 
-    # ----- To move outside main -----
     # Create camera object
     camera = PiCamera()
     camera.resolution = (HIGHRES_VERT, HIGHRES_HORIZ)
@@ -85,7 +81,6 @@ def main():
     mkdir(DATA_DIR)
     mkdir(DATA_DIR + VIDEO_SUBDIR)
     mkdir(DATA_DIR + DATALOG_SUBDIR)
-    # --------------------------------
 
     # Register exit handler method
     atexit.register(exit_handler, camera)
@@ -133,7 +128,7 @@ def timerThread():
         if second == 0 and minute % minFreq == 0 and locker == False:
             locker = True
             minutely.set()
-            minutely.clear()
+            # minutely.clear() # Let the waiting thread clear instead
         
         elif second != 0:
             locker = False
@@ -222,27 +217,28 @@ def dataIntervalThread():
     
     while True:
       
-            filePath = DATA_DIR + DATALOG_SUBDIR + 'current_log-' + time.strftime('%Y-%m-%d') + '.xml'
-            if not os.path.isfile(filePath):
-                createFile(filePath, 'data')
-            
-            minutely.wait()
-            
-            baroLock.acquire()
-            baroData = baro.getData()
-            baroLock.release()
-            
-            data = {}
-            # See "Mapping Types - dict" in the python3 documentation
-            data['time'] = time.strftime('%m/%d/%Y %H:%M:%S %Z')
-            data['pressure'] = baroData[0]
-            data['temperature'] = baroData[1]
-            
-            fields = ['time', 'pressure', 'temperature']
-            values = [data['time'], data['pressure'], data['temperature']]
-            appendFile(filePath, 'row', fields, values)
-            
-            sync.set()
+        filePath = DATA_DIR + DATALOG_SUBDIR + 'current_log-' + time.strftime('%Y-%m-%d') + '.xml'
+        if not os.path.isfile(filePath):
+            createFile(filePath, 'data')
+
+        minutely.wait()
+        minutely.clear()
+
+        baroLock.acquire()
+        baroData = baro.getData()
+        baroLock.release()
+
+        data = {}
+        # See "Mapping Types - dict" in the python3 documentation
+        data['time'] = time.strftime('%m/%d/%Y %H:%M:%S %Z')
+        data['pressure'] = baroData[0]
+        data['temperature'] = baroData[1]
+
+        fields = ['time', 'pressure', 'temperature']
+        values = [data['time'], data['pressure'], data['temperature']]
+        appendFile(filePath, 'row', fields, values)
+
+        sync.set()
 
 def cameraStreamThread(cameraIn):
     
@@ -251,8 +247,8 @@ def cameraStreamThread(cameraIn):
     # NOTE: If there are streaming issues and the avconv/ffmpeg output is needed, remove the stdout=subprocess.DEVNULL argument, which silences the command
     stream_pipe = subprocess.Popen(STREAM_CMD, shell=True, stdin=subprocess.PIPE, stdout=subprocess.DEVNULL)
 
-    # print("Starting streaming...")
     cameraIn.start_recording(stream_pipe.stdin, format='h264', resize=(LOWRES_VERT, LOWRES_HORIZ))
+    # print("Starting streaming...")
 
     while True:
         cameraIn.wait_recording(1)
@@ -266,7 +262,6 @@ def cameraRecordThread(cameraIn):
         motionStart.wait()
         
         timeString = timeQueue.get() # get timeString from motion data thread
-        timeQueue.queue.clear() # Clear the queue, just for kicks...
         
         videoPath = DATA_DIR + VIDEO_SUBDIR + 'video_' + timeString + '.h264'
         
@@ -304,13 +299,14 @@ def filesyncThread():
         sp.wait()
         print("- Ended sync -")
         sync.clear()
-        # This thread clears sync, since multiple other threads could set it
 
-'''
-Threads to add:
-- file transfer using rsync (could just make this a cron job...)
-- watching disk space and purging local logs / recordings if neccesary
-'''
+# Watch disk space and pure local logs / recordings if neccesary
+def fileManagementThread():
+
+    print("--- File Management Thread Started ---")
+    
+    while True:
+        time.sleep(1)
 
 def exit_handler(cameraIn):
     print("Exiting...")
@@ -322,14 +318,6 @@ def exit_handler(cameraIn):
         cameraIn.stop_recording(splitter_port=2)
     cameraIn.close()
     print("Finished cleanup.")
-    '''
-    Idea: Instead of using while True in all the threads, use while <boolean var>
-    This var is set to true at beginning of program, and exit handler sets it to false, 
-    and then for thread in threads: thread.join()
-    Time notes:
-    - time.time()
-    - datetime.datetime.now(), datetime.datetime.now().second, etc.
-    '''
 
 if __name__ == '__main__':
     main()
