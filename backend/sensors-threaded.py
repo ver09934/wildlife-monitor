@@ -206,7 +206,7 @@ def dataMotionThread():
         values = [data['time'], data['pressure'], data['temperature']]
         
         createFile(dataPath, 'data') # 'data' is a string, not the variable data
-        appendFile(dataPath, 'row', fields, values)
+        appendFileChildren(dataPath, 'row', fields, values)
         
         motionEnd.wait()
 
@@ -236,7 +236,7 @@ def dataIntervalThread():
 
         fields = ['time', 'pressure', 'temperature']
         values = [data['time'], data['pressure'], data['temperature']]
-        appendFile(filePath, 'row', fields, values)
+        appendFileChildren(filePath, 'row', fields, values)
 
         sync.set()
 
