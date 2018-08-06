@@ -23,6 +23,8 @@ LED_PIN = 4
 
 INFO_FILE = '../info.xml'
 
+CP_CMD = 'cp ' + INFO_FILE + ' ' + DATA_DIR
+
 tree = ElementTree.parse(INFO_FILE)
 root = tree.getroot()
 info = {}
@@ -81,6 +83,9 @@ def main():
     mkdir(DATA_DIR)
     mkdir(DATA_DIR + VIDEO_SUBDIR)
     mkdir(DATA_DIR + DATALOG_SUBDIR)
+
+    # copy xml info file into data dir
+    subprocess.Popen(CP_CMD, shell=True, stdout=subprocess.DEVNULL).wait()
 
     # Register exit handler method
     atexit.register(exit_handler, camera)
@@ -271,9 +276,9 @@ def cameraRecordThread(cameraIn):
         
         videoPath = DATA_DIR + VIDEO_SUBDIR + 'video_' + timeString + '.h264'
         
-        print("Recording start...")
         cameraIn.start_recording(videoPath, splitter_port=2)
-        
+        print("Recording start...")
+
         motionEnd.wait()
         
         cameraIn.stop_recording(splitter_port=2)
