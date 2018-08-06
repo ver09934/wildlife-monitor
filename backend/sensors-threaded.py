@@ -259,7 +259,7 @@ def cameraStreamThread(cameraIn):
     stream_pipe = subprocess.Popen(STREAM_CMD, shell=True, stdin=subprocess.PIPE, stdout=subprocess.DEVNULL)
 
     cameraIn.start_recording(stream_pipe.stdin, format='h264', resize=(LOWRES_VERT, LOWRES_HORIZ))
-    # print("Starting streaming...")
+    print("Starting streaming...")
 
     while True:
         cameraIn.wait_recording(1)
