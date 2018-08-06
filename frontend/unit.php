@@ -54,7 +54,7 @@
 
         // echo '<iframe width="560" height="315" src="https://www.youtube.com/embed/live_stream?channel=' . $channelID . '" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>';
         
-        echo '<a href="https://www.youtube.com/embed/live_stream?channel=' . $channelID . '">Livestream Link</a>';
+        echo '<a href="https://www.youtube.com/channel/' . $channelID . '/live">Livestream Link</a>';
       ?>
       
       <h2>Recorded Videos</h2>
