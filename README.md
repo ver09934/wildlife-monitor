@@ -10,14 +10,14 @@ Below are instructions on how to connect the various sensors to the Raspberry Pi
 The units use the the HC-SR501 PIR Motion Sensor, which is readily available at a number of online retailers. This should be connected as follows:
 * VCC of the PIR sensor goes to +5V on the Pi (such as physical pin 4)
 * GND of the PIR sensor goes to Ground on the pi (such as physical pin 6)
-* The signal out pin of the PIR sensor goes to BCM 17 on the Pi
+* The signal out pin of the PIR sensor goes to BCM 17 on the Pi (physical pin 11)
 
 ### Barometric Pressure/Altitude/Temperature Sensor
 The units use the MPL3115A2 I2C Barometric Pressure/Altitude/Temperature Sensor, available [here](https://www.adafruit.com/product/1893). This should be connected as follows:
 * Vin on the Baro goes to +3.3V (such as physical pin 1)
 * GND on the Baro goes to Ground on the Pi (such as physical pin 14)
-* SCL on the Baro goes to BCM 3 (SCL) on the Pi
-* SDA on the Baro goes to BCM 2 (SDA) on the Pi
+* SCL on the Baro goes to BCM 3 (SCL) on the Pi (physical pin 5)
+* SDA on the Baro goes to BCM 2 (SDA) on the Pi (physical pin 3)
 
 ### Camera
 The camera is connected as shown in the Raspberry Pi documentation [here](https://projects.raspberrypi.org/en/projects/getting-started-with-picamera/4), with the ribbon cable being connected to the camera connector on the board.
