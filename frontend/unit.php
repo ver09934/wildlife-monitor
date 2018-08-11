@@ -124,7 +124,15 @@
             echo '<td>' . strval(count($xmlfiles) - $i) . '</td>';
             
             if ($mp4files[$i] != $vidNotFound) {
-              echo '<td>' . '<pre>' . '<a href="' . $videopath . $mp4files[$i] . '">' . $mp4files[$i] . '</a>' . '</pre>' . '</td>';
+              
+              // echo '<td>' . '<pre>' . '<a href="' . $videopath . $mp4files[$i] . '">' . $mp4files[$i] . '</a>' . '</pre>' . '</td>'; // Link only
+              // echo '<td>' . '<video width="320" height="240" controls>' . '<source src="' . $videopath . $mp4files[$i] . '" type="video/mp4">' . '</video>' . '</td>'; // Video only
+              
+              echo '<td>';
+              echo '<pre><a href="' . $videopath . $mp4files[$i] . '">' . $mp4files[$i] . '</a></pre>';
+              echo '<video width="256" height="144" controls>' . '<source src="' . $videopath . $mp4files[$i] . '" type="video/mp4">' . '</video>';
+              echo '</td>';
+
             }
             else {
               echo '<td>' . '<pre>' . $vidNotFound . '</pre>' . '</td>';
