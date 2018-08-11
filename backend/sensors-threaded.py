@@ -14,16 +14,14 @@ import xml.etree.ElementTree as ElementTree
 import MPL3115A2 as baro
 from lameXMLFormatter import *
 
-DATA_DIR = '../data/' # Needs '/' at the end
-VIDEO_SUBDIR = 'videos/' # Needs '/' at the end
-DATALOG_SUBDIR = 'datalogs/' # Needs '/' at the end
-
 PIR_PIN = 17
 LED_PIN = 4
 
+DATA_DIR = '../data/' # Needs '/' at the end
+VIDEO_SUBDIR = 'videos/' # Needs '/' at the end
+DATALOG_SUBDIR = 'datalogs/' # Needs '/' at the end
 INFO_FILE = '../info.xml'
-
-CP_CMD = 'cp ' + INFO_FILE + ' ' + DATA_DIR
+PREVIEW_IMG = 'preview-img.jpg'
 
 tree = ElementTree.parse(INFO_FILE)
 root = tree.getroot()
@@ -35,19 +33,13 @@ for child in root:
 if not info['serverdatadir'].endswith('/'):
     info['serverdatadir'] += '/'
 
+CP_CMD = 'cp ' + INFO_FILE + ' ' + DATA_DIR
 SYNC_CMD = "rsync -az --delete --exclude '*.h264' --exclude '.*' " + DATA_DIR + " " + info['serveruser'] + "@" + info['serverdomain'] + ":" + info['serverdatadir'] + info['name']
-
-#with open("yt-stream-key.txt", "r") as f:
-#    KEY = f.read()
-KEY = info['ytstreamkey']
-
 CONVERT_CMD = "bash videoconvert.sh " + DATA_DIR + VIDEO_SUBDIR
-YOUTUBE="rtmp://a.rtmp.youtube.com/live2/"
-STREAM_CMD = 'avconv -loglevel quiet -re -ar 44100 -ac 2 -acodec pcm_s16le -f s16le -ac 2 -i /dev/zero -f h264 -i - -vcodec copy -acodec aac -ab 128k -g 50 -strict experimental -f flv ' + YOUTUBE + KEY
 
 HIGHRES_VERT = 1280
 HIGHRES_HORIZ = 720
-LOWRES_VERT = 480
+LOWRES_VERT = 640
 LOWRES_HORIZ = 360
 CAM_FPS = 25
 
@@ -89,7 +81,6 @@ def main():
 
     # Register exit handler method
     atexit.register(exit_handler, camera)
-    # atexit.register(goodbye, 'Donny', 'nice') # Can pass args when registering...
 
     # Start threads
     threads = []
@@ -97,8 +88,7 @@ def main():
     threads.append(threading.Thread(target=motionThread))
     threads.append(threading.Thread(target=cameraRecordThread, args=(camera,))) # Need the "," to make it a list
     threads.append(threading.Thread(target=dataMotionThread))
-    threads.append(threading.Thread(target = cameraStreamThread, args=(camera,)))
-    threads.append(threading.Thread(target = dataIntervalThread))
+    threads.append(threading.Thread(target = dataIntervalThread, args=(camera,)))
     threads.append(threading.Thread(target = videoconvertThread))
     threads.append(threading.Thread(target = filesyncThread))
 
@@ -222,12 +212,14 @@ def dataMotionThread():
         appendFile(dataPath, 'length', diffStr, True)
 
 # record data at regular interval (waits for lock on baro)
-def dataIntervalThread():
+def dataIntervalThread(cameraIn):
    
     print("--- Regular Interval Data Thread Started ---")
     
     while True:
       
+        # Log data to file
+
         filePath = DATA_DIR + DATALOG_SUBDIR + 'current_log-' + time.strftime('%Y-%m-%d') + '.xml'
         if not os.path.isfile(filePath):
             createFile(filePath, 'data')
@@ -249,20 +241,12 @@ def dataIntervalThread():
         values = [data['time'], data['pressure'], data['temperature']]
         appendFileChildren(filePath, 'row', fields, values)
 
+        # Take minutely image, overwriting previous image
+
+        imgPath = DATA_DIR + PREVIEW_IMG
+        cameraIn.capture(imgPath, resize=(LOWRES_VERT, LOWRES_HORIZ))
+
         sync.set()
-
-def cameraStreamThread(cameraIn):
-    
-    print("--- Streaming Thread Started ---")
-
-    # NOTE: If there are streaming issues and the avconv/ffmpeg output is needed, remove the stdout=subprocess.DEVNULL argument, which silences the command
-    stream_pipe = subprocess.Popen(STREAM_CMD, shell=True, stdin=subprocess.PIPE, stdout=subprocess.DEVNULL)
-
-    cameraIn.start_recording(stream_pipe.stdin, format='h264', resize=(LOWRES_VERT, LOWRES_HORIZ))
-    print("Starting streaming...")
-
-    while True:
-        cameraIn.wait_recording(1)
 
 def cameraRecordThread(cameraIn):
         

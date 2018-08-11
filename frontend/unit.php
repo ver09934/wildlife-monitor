@@ -33,7 +33,22 @@
     ?>
     <div id="main">
       
-      <h1>Test Unit Page</h1>
+      <?php
+        $infoFile = 'info.xml';
+        $prettynamestr = 'prettyname';
+        $infoPath = $datadir . $unit . $infoFile;
+
+        $infoxml = simplexml_load_file($infoPath);
+        $prettyname = $infoxml->$prettynamestr;
+
+        echo '<h1>' . $prettyname . '</h1>';
+      ?>
+
+      <h2>Preview Image</h2>
+
+      <?php
+        echo 'TODO';
+      ?>
       
       <h2>Data Graphs</h2>
       
@@ -41,23 +56,8 @@
       
       <div id="temp_chart" style="width: 650px; height: 450px" class="datagraph"></div>
       <div id="pres_chart" style="width: 650px; height: 450px" class="datagraph"></div>
-      
-      <h2>Livestream</h2>
-      
-      <?php
-        $infoFile = 'info.xml';
-        $idstr = 'channelid';
-        $infoPath = $datadir . $unit . $infoFile;
 
-        $infoxml = simplexml_load_file($infoPath);
-        $channelID = $infoxml->$idstr;
-
-        // echo '<iframe width="560" height="315" src="https://www.youtube.com/embed/live_stream?channel=' . $channelID . '" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>';
-        
-        echo '<a href="https://www.youtube.com/channel/' . $channelID . '/live">Livestream Link</a>';
-      ?>
-      
-      <h2>Recorded Videos</h2>
+      <h2>Captured Videos</h2>
       
       <table>
         <tr>
