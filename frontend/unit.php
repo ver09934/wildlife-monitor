@@ -44,10 +44,11 @@
         echo '<h1>' . $prettyname . '</h1>';
       ?>
 
-      <h2>Preview Image</h2>
+      <h2>Current Image</h2>
 
       <?php
-        echo 'TODO';
+        $currentimage = 'preview-img.jpg';
+        echo '<img src="' . $datadir . $unit . $currentimage . '" alt="current-image">';
       ?>
       
       <h2>Data Graphs</h2>
