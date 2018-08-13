@@ -1,23 +1,23 @@
-if (typeof currentlogpath === 'undefined') {
-    console.log("chart.js didn't get a currentlogpath variable...");
+if (typeof currentLogPath === 'undefined') {
+    console.log("chart.js didn't get a currentLogPath variable...");
     throw new Error();
 }
 
 var xhttp = new XMLHttpRequest();
 xhttp.onreadystatechange = function() {
     if (this.readyState == 4 && this.status == 200) {
-        readData(xhttp);
+
+        google.charts.load('current', {packages: ['corechart', 'line']});
+        google.charts.setOnLoadCallback(
+            function() {
+                drawLineColors(xhttp);
+            }
+        );
+
     }
 };
-// xhttp.open("GET","data/data-unit1/datalogs/current_log-2018-07-31.xml", true);
-xhttp.open("GET", currentlogpath, true);
+xhttp.open("GET", currentLogPath, true);
 xhttp.send();
-
-function readData(xml) {
-    var xmlDoc = xml.responseXML;
-    google.charts.load('current', {packages: ['corechart', 'line']});
-    google.charts.setOnLoadCallback(function() {drawLineColors(xml);});
-}
 
 function drawLineColors(xml) {
     
@@ -64,11 +64,9 @@ function drawLineColors(xml) {
         colors: ['#4286f4']
     };
 
-    var tempChart = new google.visualization.LineChart(document.getElementById('temp_chart'));
-    var presChart = new google.visualization.LineChart(document.getElementById('pres_chart'));
+    var tempChart = new google.visualization.LineChart(document.getElementById('temp-chart'));
+    var presChart = new google.visualization.LineChart(document.getElementById('pres-chart'));
     
     tempChart.draw(tempData, tempOptions);
     presChart.draw(presData, presOptions);
 }
-
-

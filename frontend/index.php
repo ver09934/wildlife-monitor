@@ -1,3 +1,18 @@
+<?php
+
+  // File paths and names
+  $dataDir = 'data/';
+  
+  $logDir = 'datalogs/';
+  $infoFileName = 'info.xml';
+
+  // Info XML fields
+  $prettyNameField = 'prettyname';
+
+  // Datalog XML fields
+  $timeField = 'time';
+
+?>
 <!DOCTYPE html>
 <html>
   <head>
@@ -19,33 +34,46 @@
         <tr>
           <th>Name</th>
           <th>Page Link</th>
-          <!-- --> <th>Last Reported</th> <!-- -->
+          <th>Last Reported</th>
         </tr>
         
         <?php
-          $dirs = glob('data/*' , GLOB_ONLYDIR);
           
-          foreach ($dirs as $dir) {
-              $dirname = basename($dir);
-              echo '<tr>';
+          $unitDirPaths = glob($dataDir . '*' , GLOB_ONLYDIR);
+          
+          foreach ($unitDirPaths as $unitDirPath) {
               
-              echo '<td>' . $dirname . '</td>';
-              echo '<td>' . '<a href="unit.php?pidata=' . $dirname . '">unit.php?pidata=' . $dirname . '</a>' . '</td>';
+              // NOTE: $unitDirPath does not have a '/' at the end...
 
-              // echo '<td>' . '<a href="unit.php?pidata=' . $dirname . '">' . $dirname . '</a></td>';
+              $unitDirName = basename($unitDirPath);
 
-              $logsubdir = $dir . '/datalogs/';
-              $logfiles = scandir($logsubdir);
-              $logfiles = array_diff($logfiles, array('.', '..'));
-              $logfiles = array_values($logfiles); // rescale indices to 0
+              echo '<tr>';
 
-              if (count($logfiles) != 0) {
-                $currentlog = $logfiles[count($logfiles) - 1];
-                $xml = simplexml_load_file($logsubdir . $currentlog);
+              if (file_exists($unitDirPath . '/' . $infoFileName)) {
+                $xml = simplexml_load_file($unitDirPath . '/' . $infoFileName);
+                $prettyName = $xml->$prettyNameField;
+                echo '<td>' . $prettyName . '</td>';
+              }
+              else {
+                echo '<td>' . $unitDirName . '</td>';
+              }
+
+              echo '<td>' . '<a href="unit.php?pidata=' . $unitDirName . '">unit.php?pidata=' . $unitDirName . '</a>' . '</td>';
+
+              $logDirpath = $unitDirPath . '/' . $logDir;
+
+              $logFiles = scandir($logDirpath);
+              $logFiles = array_diff($logFiles, array('.', '..'));
+              $logFiles = array_values($logFiles); // rescale indices to 0
+
+              if (count($logFiles) != 0) {
+
+                $currentLog = $logFiles[count($logFiles) - 1];
+                $xml = simplexml_load_file($logDirpath . $currentLog);
 
                 $elemCount = $xml->count();
-                echo '<td>' . $xml->row[$elemCount - 1]->time . '</td>';
-                // echo '<td>' . $xml->count() . '</td>';
+                echo '<td>' . $xml->row[$elemCount - 1]->$timeField . '</td>';
+
               }
 
               echo '</tr>';

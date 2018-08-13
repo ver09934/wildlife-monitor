@@ -1,3 +1,33 @@
+<?php
+
+  // File paths and names
+  $unit = $_GET["pidata"] . '/';
+
+  $dataDir = 'data/';
+
+  $logDir = 'datalogs/';
+  $videoDir = 'videos/';
+  $infoFile = 'info.xml';
+  $currentImage = 'preview-img.jpg';
+
+  $logDirPath = $dataDir . $unit . $logDir;
+  $videoDirPath = $dataDir . $unit . $videoDir;
+  $infoFilePath = $dataDir . $unit . $infoFile;
+  $currentImagePath = $dataDir . $unit . $currentImage;
+
+  // Info XML fields
+  $prettyNameField = 'prettyname';
+
+  // Video data XML fields
+  $dataFields = array('time', 'temperature', 'pressure', 'length');
+  $dataUnits = array('', ' &deg;C', ' Pa', '');
+
+  // Other displayed items
+  $currentImageAlt = 'current-image';
+  $vidNotFound = "Video unavailable";
+  $dataNotFound = "Data unavailable";
+
+?>
 <!DOCTYPE html>
 <html>
   <head>
@@ -5,23 +35,14 @@
     <link rel="stylesheet" type="text/css" href="main.css">
     <script type="text/javascript">
     <?php
-      $datadir = 'data/';
-      $unit = $_GET["pidata"] . '/';
-      $videosubdir = 'videos/';
-      $logsubdir = 'datalogs/';
 
-      $videopath = $datadir . $unit . $videosubdir;
-      $logpath = $datadir . $unit . $logsubdir;
-      
-      $logfiles = scandir($logpath);
-      $logfiles = array_diff($logfiles, array('.', '..'));
-      $logfiles = array_values($logfiles); // rescale indices
+      $logFiles = scandir($logDirPath);
+      $logFiles = array_diff($logFiles, array('.', '..'));
+      $logFiles = array_values($logFiles); // rescale indices
 
-      // print_r($logfiles);
+      $currentLogPath = $logFiles[count($logFiles) - 1];
 
-      $currentlogpath = $logfiles[count($logfiles) - 1];
-
-      echo 'var currentlogpath = "' . $datadir . $unit . $logsubdir . $currentlogpath . '";';
+      echo 'var currentLogPath = "' . $logDirPath . $currentLogPath . '";';
     ?>
     </script>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
@@ -34,29 +55,23 @@
     <div id="main">
       
       <?php
-        $infoFile = 'info.xml';
-        $prettynamestr = 'prettyname';
-        $infoPath = $datadir . $unit . $infoFile;
-
-        $infoxml = simplexml_load_file($infoPath);
-        $prettyname = $infoxml->$prettynamestr;
-
-        echo '<h1>' . $prettyname . '</h1>';
+        $infoXml = simplexml_load_file($infoFilePath);
+        $prettyName = $infoXml->$prettyNameField;
+        echo '<h1>' . $prettyName . '</h1>';
       ?>
 
       <h2>Current Image</h2>
 
       <?php
-        $currentimage = 'preview-img.jpg';
-        echo '<img src="' . $datadir . $unit . $currentimage . '" alt="current-image">';
+        echo '<img src="' . $currentImagePath . '" alt="' . $currentImageAlt . '">';
       ?>
       
       <h2>Data Graphs</h2>
       
       <h3>Temperature/Barometric Pressure</h3>
       
-      <div id="temp_chart" style="width: 650px; height: 450px" class="datagraph"></div>
-      <div id="pres_chart" style="width: 650px; height: 450px" class="datagraph"></div>
+      <div id="temp-chart" class="data-graph"></div>
+      <div id="pres-chart" class="data-graph"></div>
 
       <h2>Captured Videos</h2>
       
@@ -73,88 +88,79 @@
       
         <?php
                  
-          $files = scandir($videopath);
+          $files = scandir($videoDirPath);
           $files = array_diff($files, array('.', '..'));
           $files = array_values($files); // rescale indices to 0
           
-          $mp4files = array();
-          $xmlfiles = array();
+          $mp4Files = array();
+          $xmlFiles = array();
           
-          foreach($files as $item) {
+          foreach($files as $file) {
             
-            $ext = pathinfo($item, PATHINFO_EXTENSION);
+            $ext = pathinfo($file, PATHINFO_EXTENSION);
             
             if ($ext == "mp4") {
-              array_push($mp4files, $item);
-            } elseif ($ext == "xml") {
-              array_push($xmlfiles, $item);
+              array_push($mp4Files, $file);
+            }
+            elseif ($ext == "xml") {
+              array_push($xmlFiles, $file);
             }
                       
           }
-
-          $vidNotFound = "Video unavailable";
-          $dataNotFound = "Data unavailable";
           
-          if (count($xmlfiles) > count($mp4files)) {
+          if (count($xmlFiles) > count($mp4Files)) {
                       
-            $diff = count($xmlfiles) - count($mp4files);
+            $diff = count($xmlFiles) - count($mp4Files);
             
             for ($x = 0; $x < $diff; $x++) {
-                array_push($mp4files, $vidNotFound);
+                array_push($mp4Files, $vidNotFound);
             }
             
           }
-          else if (count($mp4files) > count($xmlfiles)) {
+          else if (count($mp4Files) > count($xmlFiles)) {
 
-            $diff = count($mp4files) - count($xmlfiles);
+            $diff = count($mp4Files) - count($xmlFiles);
             
             for ($x = 0; $x < $diff; $x++) {
-                array_push($xmlfiles, $dataNotFound);
+                array_push($xmlFiles, $dataNotFound);
             }
 
           }
           
-          // $mp4files and $xmlfiles are now of equal length
+          // $mp4Files and $xmlFiles are now of equal length
 
-          $mp4files = array_reverse($mp4files);
-          $xmlfiles = array_reverse($xmlfiles);
-                    
-          for ($i = 0; $i < count($xmlfiles); $i++) {
+          $mp4Files = array_reverse($mp4Files);
+          $xmlFiles = array_reverse($xmlFiles);
+          
+          // iterate over all files (arbitrarily use count($xmlFiles) instead of count($mp4Files)) - create 1 table row
+          for ($i = 0; $i < count($xmlFiles); $i++) {
             echo '<tr>';
             
-            echo '<td>' . strval(count($xmlfiles) - $i) . '</td>';
+            // --- Column 1 - Number ---
+            echo '<td>' . strval(count($xmlFiles) - $i) . '</td>';
             
-            if ($mp4files[$i] != $vidNotFound) {
+            // --- Column 2 - Video ---
+            if ($mp4Files[$i] != $vidNotFound) {
               
-              echo '<td>' . '<pre>' . '<a href="' . $videopath . $mp4files[$i] . '">' . $mp4files[$i] . '</a>' . '</pre>' . '</td>'; // Link only
-              // echo '<td>' . '<video width="320" height="240" controls>' . '<source src="' . $videopath . $mp4files[$i] . '" type="video/mp4">' . '</video>' . '</td>'; // Video only
-              /*
-              echo '<td>';
-              echo '<pre><a href="' . $videopath . $mp4files[$i] . '">' . $mp4files[$i] . '</a></pre>';
-              echo '<video width="256" height="144" controls>' . '<source src="' . $videopath . $mp4files[$i] . '" type="video/mp4">' . '</video>';
-              echo '</td>';
-              */ // Link and Video
+              echo '<td>' . '<pre>' . '<a href="' . $videoDirPath . $mp4Files[$i] . '">' . $mp4Files[$i] . '</a>' . '</pre>' . '</td>'; // link to video
+              // echo '<td>' . '<video width="320" height="240" controls>' . '<source src="' . $videoDirPath . $mp4Files[$i] . '" type="video/mp4">' . '</video>' . '</td>'; // embed video 
             }
             else {
               echo '<td>' . '<pre>' . $vidNotFound . '</pre>' . '</td>';
             }
             
-            // if (file_exists($videopath . $xmlfiles[$x])) {
+            // --- Rest of Columns - XML data ---
+            if ($xmlFiles[$i] != $dataNotFound) {
 
-            if ($xmlfiles[$i] != $dataNotFound) {
+                $dataXml = simplexml_load_file($videoDirPath . $xmlFiles[$i]);
 
-                $xml = simplexml_load_file($videopath . $xmlfiles[$i]);
+                for ($j = 0; $j < count($dataFields); $j++) {
 
-                $fields = array('time', 'temperature', 'pressure', 'length');
-                $units = array('', ' &deg;C', ' Pa', '');
-
-                for ($j = 0; $j < 4; $j++) {
-
-                  $field = $fields[$j];
-                  $unit = $units[$j];
+                  $dataField = $dataFields[$j];
+                  $dataUnit = $dataUnits[$j];
                   
-                  if ($xml->row[0]->$field != "") {
-                    echo '<td>' . '<pre>' . $xml->row[0]->$field . $unit . '</pre>' . '</td>';
+                  if ($dataXml->row[0]->$dataField != "") {
+                    echo '<td>' . '<pre>' . $dataXml->row[0]->$dataField . $dataUnit . '</pre>' . '</td>';
                   }
                   else {
                     echo '<td>' . '<pre>' . $dataNotFound . '</pre>' . '</td>';
@@ -164,13 +170,11 @@
 
             }
             else {
-              for ($k = 0; $k < 4; $k++) {
+              for ($k = 0; $k < count($dataFields); $k++) {
                 echo '<td>' . '<pre>' . $dataNotFound . '</pre>' . '</td>';
-              } 
+              }
             }
-                               
-            // echo '<td>' . '<pre>' . '<a href="' . $videopath . $xmlfiles[$x] . '">' . $xmlfiles[$x] . '</a>' . '</pre>' . '</td>';
-            
+                                           
             echo '</tr>';
           }
           

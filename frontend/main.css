@@ -64,8 +64,10 @@ th, td {
 
 /* --- Graphs --- */
 
-.datagraph {
+.data-graph {
     display: inline-block;
+    width: 650px;
+    height: 450px;
     /*
     position: relative;
     width: 49%;
