@@ -11,6 +11,7 @@ The units use the the HC-SR501 PIR Motion Sensor, which is readily available at 
 * VCC of the PIR sensor goes to +5V on the Pi (such as physical pin 4)
 * GND of the PIR sensor goes to Ground on the pi (such as physical pin 6)
 * The signal out pin of the PIR sensor goes to BCM 17 on the Pi (physical pin 11)
+
 In addition, to significantly reduce the amount of false triggers due to RF interference caused by the Pi's communication on WiFi frequencies, it is helpful to attach a 10K resistor between the signal pin of the PIR sensor and ground.
 
 ### Barometric Pressure/Altitude/Temperature Sensor
