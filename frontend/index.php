@@ -58,7 +58,7 @@
                 echo '<td>' . $unitDirName . '</td>';
               }
 
-              echo '<td>' . '<a href="unit.php?pidata=' . $unitDirName . '">unit.php?pidata=' . $unitDirName . '</a>' . '</td>';
+              echo '<td><a href="unit.php?pidata=' . $unitDirName . '">unit.php?pidata=' . $unitDirName . '</a></td>';
 
               $logDirpath = $unitDirPath . '/' . $logDir;
 

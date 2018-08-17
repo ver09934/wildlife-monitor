@@ -131,11 +131,11 @@
             
             // --- Column 2 - Video ---
             if (file_exists($videoDirPath . $videoFile)) {
-              echo '<td>' . '<pre>' . '<a href="' . $videoDirPath . $videoFile . '">' . $videoFile . '</a>' . '</pre>' . '</td>'; // link to video
-              // echo '<td>' . '<video width="320" height="240" controls>' . '<source src="' . $videoDirPath . $mp4Files[$i] . '" type="video/mp4">' . '</video>' . '</td>'; // embed video 
+              echo '<td><pre><a href="' . $videoDirPath . $videoFile . '">' . $videoFile . '</a></pre></td>'; // link to video
+              // echo '<td><video width="320" height="240" controls><source src="' . $videoDirPath . $mp4Files[$i] . '" type="video/mp4"></video></td>'; // embed video 
             }
             else {
-              echo '<td>' . '<pre>' . $vidNotFound . '</pre>' . '</td>';
+              echo '<td><pre>' . $vidNotFound . '</pre></td>';
             }
             
             // --- Rest of Columns - XML data ---
@@ -149,10 +149,10 @@
                   $dataUnit = $dataUnits[$j];
                   
                   if ($dataXml->row[0]->$dataField != "") {
-                    echo '<td>' . '<pre>' . $dataXml->row[0]->$dataField . $dataUnit . '</pre>' . '</td>';
+                    echo '<td><pre>' . $dataXml->row[0]->$dataField . $dataUnit . '</pre></td>';
                   }
                   else {
-                    echo '<td>' . '<pre>' . $dataNotFound . '</pre>' . '</td>';
+                    echo '<td><pre>' . $dataNotFound . '</pre></td>';
                   }
                   
                 }
@@ -160,7 +160,7 @@
             }
             else {
               for ($k = 0; $k < count($dataFields); $k++) {
-                echo '<td>' . '<pre>' . $dataNotFound . '</pre>' . '</td>';
+                echo '<td><pre>' . $dataNotFound . '</pre></td>';
               }
             }
             
