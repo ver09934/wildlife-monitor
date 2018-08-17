@@ -128,8 +128,7 @@ def timerThread():
         elif second != 0:
             locker = False
         
-        else:
-            time.sleep(0.001)
+        time.sleep(0.001)
 
 # when motion is detected (based off PIR and camera stream), set the motion detected event, which other threads are listening for
 def motionThread():
@@ -167,6 +166,8 @@ def motionThread():
             
             motionStart.clear()
             motionEnd.set()
+
+        time.sleep(0.001)
 
 # record data when motion is detected (waits for lock on baro), higher priority than dataIntervalThread
 # Creates a separate file for each event, with name corresponding to the created video file
