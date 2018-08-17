@@ -309,8 +309,6 @@ def exit_handler(cameraIn):
     GPIO.output(LED_PIN, GPIO.LOW)
     GPIO.cleanup()
     if motionStart.is_set():
-        subprocess.Popen(CONVERT_CMD, shell=True)
-        cameraIn.stop_recording()
         cameraIn.stop_recording(splitter_port=2)
     cameraIn.close()
     print("Finished cleanup.")
