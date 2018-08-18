@@ -157,12 +157,11 @@ nav a:hover {
 /* --- Graphs --- */
 
 .data-graph {
-    display: inline-block;
-    width: 650px;
-    height: 450px;
-    /*
-    position: relative;
-    width: 49%;
-    height: 500px;
-    */
+  display: inline-block;
+  position: relative;
+  margin: 0px;
+  padding: 0px;
+  width: 650px;
+  height: 450px;
+  border: 1px solid black;
 }

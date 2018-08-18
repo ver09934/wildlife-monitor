@@ -48,7 +48,9 @@ function drawLineColors(xml) {
         vAxis: {
             title: 'Temperature (\xB0C)'
         },
-        colors: ['#e52920']
+        colors: ['#e52920'],
+        'backgroundColor': 'transparent',
+        chartArea:{left:80,top:40,width:"85%",height:"80%"}
     };
     
     var presOptions = {
@@ -61,7 +63,9 @@ function drawLineColors(xml) {
         vAxis: {
             title: 'Pressure (Pa)'
         },
-        colors: ['#4286f4']
+        colors: ['#4286f4'],
+        'backgroundColor': 'transparent',
+        chartArea:{left:80,top:40,width:"85%",height:"80%"}
     };
 
     var tempChart = new google.visualization.LineChart(document.getElementById('temp-chart'));
