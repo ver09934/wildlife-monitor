@@ -39,6 +39,11 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <?php
+      $infoXml = simplexml_load_file($infoFilePath);
+      $prettyName = $infoXml->$prettyNameField;
+      echo '<title>' . $prettyName . '</title>';
+    ?>
     <title>Test Unit</title>
     <link rel="stylesheet" type="text/css" href="main.css">
     <link rel="icon" href="/favicon.png">
@@ -64,8 +69,6 @@
     <div id="main">
       
       <?php
-        $infoXml = simplexml_load_file($infoFilePath);
-        $prettyName = $infoXml->$prettyNameField;
         echo '<h1 class="title">' . $prettyName . '</h1>';
       ?>
 
