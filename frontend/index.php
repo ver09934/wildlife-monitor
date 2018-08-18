@@ -28,7 +28,7 @@
       
       <h1 class="title">Wildlife Monitor Homepage</h1>
 
-      <div id="homepage">
+      <div id="content-container-center">
       
         <table id="unit-table">
           <tr>

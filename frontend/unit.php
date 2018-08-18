@@ -72,12 +72,12 @@
         echo '<h1 class="title">' . $prettyName . '</h1>';
       ?>
 
-      <div id="unit-page">
+      <div id="content-container-center">
 
-        <h2 class="subtitle">Minutely Image</h2>
+        <h2 class="subtitle">Current Image</h2>
 
         <?php
-          echo '<img src="' . $currentImagePath . '" alt="' . $currentImageAlt . '">';
+          echo '<img class="center-align" src="' . $currentImagePath . '" alt="' . $currentImageAlt . '">';
         ?>
         
         <h2 class="subtitle">Sensor Data</h2>

@@ -26,15 +26,15 @@ html, body {
   padding: 0px;
 }
 
-#homepage {
+#content-container-center {
   text-align: center;
   margin: 0px;
-  padding: 15px;
+  padding: 0px 15px 15px 15px; /* top right bottom left */
 }
 
-#unit-page {
+#content-container {
   margin: 0px;
-  padding: 15px;
+  padding: 0px 15px 15px 15px;
 }
 
 .title {
@@ -48,6 +48,28 @@ html, body {
 
 .subtitle {
   font-weight: 300;
+  /* background-color: #3b79dd; */
+  background-color: #254882;
+  padding: 15px;
+  color: #fff;
+  border-radius: 5px;
+  text-align: center;
+  margin: 20px 0px;
+}
+
+.title-simple {
+  text-align: center;
+  font-weight: 400;
+}
+
+.subtitle-simple {
+  text-align: center;
+  font-weight: 300;
+}
+
+.center-align {
+  margin: auto;
+  display: block;
 }
 
 /* --- Navbar --- */
@@ -111,6 +133,10 @@ nav a:hover {
   border-collapse: collapse;
   text-align: left;
   border: 1px solid #ddd;
+}
+
+#data-table {
+  margin: auto;
 }
 
 #data-table th {
