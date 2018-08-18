@@ -49,7 +49,7 @@ html, body {
 .subtitle {
   font-weight: 300;
   /* background-color: #3b79dd; */
-  background-color: #254882;
+  background-color: #3a3b60;
   padding: 15px;
   color: #fff;
   border-radius: 5px;
@@ -70,6 +70,7 @@ html, body {
 .center-align {
   margin: auto;
   display: block;
+  border-radius: 6px;
 }
 
 /* --- Navbar --- */
@@ -150,6 +151,10 @@ nav a:hover {
   padding: 0px 10px;
 }
 
+#data-table tr {
+  background-color: #cedbce;
+}
+
 #data-table tr:nth-child(odd) {
   background-color: #f2f2f2;
 }
@@ -163,5 +168,4 @@ nav a:hover {
   padding: 0px;
   width: 650px;
   height: 450px;
-  border: 1px solid black;
 }
