@@ -110,7 +110,6 @@ nav a:hover {
 #data-table, #data-table th, #data-table td {
   border-collapse: collapse;
   text-align: left;
-  padding: 0px 5px;
   border: 1px solid #ddd;
 }
 
@@ -119,6 +118,10 @@ nav a:hover {
   background-color: #4CAF50;
   color: #ffffff;
   padding: 5px;
+}
+
+#data-table td {
+  padding: 0px 10px;
 }
 
 #data-table tr:nth-child(odd) {
