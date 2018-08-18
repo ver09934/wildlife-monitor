@@ -8,9 +8,10 @@ xhttp.onreadystatechange = function() {
     if (this.readyState == 4 && this.status == 200) {
 
         google.charts.load('current', {packages: ['corechart', 'line']});
+
         google.charts.setOnLoadCallback(
             function() {
-                drawLineColors(xhttp);
+                drawChart(xhttp);
             }
         );
 
@@ -19,7 +20,7 @@ xhttp.onreadystatechange = function() {
 xhttp.open("GET", currentLogPath, true);
 xhttp.send();
 
-function drawLineColors(xml) {
+function drawChart(xml) {
     
     var tempData = new google.visualization.DataTable();
     var presData = new google.visualization.DataTable();
@@ -38,39 +39,53 @@ function drawLineColors(xml) {
         presData.addRow([new Date(rows[i].getElementsByTagName("time")[0].childNodes[0].nodeValue), Number(rows[i].getElementsByTagName("pressure")[0].childNodes[0].nodeValue)]);
     }
 
-    var tempOptions = {
+    var tempOptions =  {
         title: 'Temperature over Time',
-        legend: 'none',
+        fontName: 'Helvetica',
+        curveType: 'function',
+        legend: {
+            position: 'none'
+        },
         hAxis: {
-            // format: 'M/d/yy hh:mm:ss',
-            title: 'Time'
+            title: 'Time',
+            format: 'hh:mm a',
+            gridlines: {
+                count: -1
+            }
         },
         vAxis: {
-            title: 'Temperature (\xB0C)'
+            title: 'Temperature (\xB0C)',
+            format: '###,###.### \xB0C',
         },
         colors: ['#e52920'],
-        'backgroundColor': 'transparent',
-        chartArea:{left:80,top:40,width:"85%",height:"80%"}
+        backgroundColor: 'transparent',
     };
-    
+
     var presOptions = {
         title: 'Pressure over Time',
-        legend: 'none',
+        fontName: 'Helvetica',
+        curveType: 'function',
+        legend: {
+            position: 'none',
+        },
         hAxis: {
-            // format: 'M/d/yy hh:mm:ss',
-            title: 'Time'
+            title: 'Time',
+            format: 'hh:mm a',
+            gridlines: {
+                count: -1
+            }
         },
         vAxis: {
+            format: '###,###.### Pa',
             title: 'Pressure (Pa)'
         },
         colors: ['#4286f4'],
-        'backgroundColor': 'transparent',
-        chartArea:{left:80,top:40,width:"85%",height:"80%"}
+        backgroundColor: 'transparent',
     };
 
-    var tempChart = new google.visualization.LineChart(document.getElementById('temp-chart'));
-    var presChart = new google.visualization.LineChart(document.getElementById('pres-chart'));
-    
-    tempChart.draw(tempData, tempOptions);
-    presChart.draw(presData, presOptions);
+    var tempChart = new google.charts.Line(document.getElementById('temp-chart'));
+    var presChart = new google.charts.Line(document.getElementById('pres-chart'));
+
+    tempChart.draw(tempData, google.charts.Line.convertOptions(tempOptions));
+    presChart.draw(presData, google.charts.Line.convertOptions(presOptions));
 }
