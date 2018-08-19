@@ -133,7 +133,7 @@ nav a:hover {
 #data-table, #data-table th, #data-table td {
   border-collapse: collapse;
   text-align: left;
-  border: 1px solid #ddd;
+  /* border: 1px solid #ddd; */
 }
 
 #data-table {
