@@ -87,17 +87,6 @@
 
         <h2 class="subtitle">Captured Videos</h2>
         
-        <table id="data-table">
-          <tr>
-            <th>Number</th>
-            <th>Video</th> 
-            <th>Time</th>
-            <th>Temperature</th>
-            <th>Pressure</th>
-            <th>Length</th>
-            <!-- <th>Metadata File</th> -->
-          </tr>
-        
           <?php
                    
             $files = scandir($videoDirPath);
@@ -121,6 +110,23 @@
 
             // Newest at top
             $union = array_reverse($union);
+
+            // Should the table be shown?
+            if (count($union) != 0) {
+              echo
+              '<table id="data-table">
+                <tr>
+                  <th>Number</th>
+                  <th>Video</th> 
+                  <th>Time</th>
+                  <th>Temperature</th>
+                  <th>Pressure</th>
+                  <th>Length</th>
+                </tr>';
+            }
+            else {
+              echo '<h2 class="subtitle-simple center">No videos captured yet...</h2>';
+            }
 
             // iterate over all files - create 1 table row per loop
             for ($i = 0; $i < count($union); $i++) {
@@ -170,10 +176,12 @@
               
               echo '</tr>';
             }
+
+            if (count($union) != 0) {
+              echo '</table>';
+            }
             
           ?>
-        
-        </table>
 
       </div>
     </div>
