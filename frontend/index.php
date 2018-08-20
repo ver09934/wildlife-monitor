@@ -29,16 +29,22 @@
       <h1 class="title">Wildlife Monitor Homepage</h1>
 
       <div id="content-container-center">
-      
-        <table id="unit-table">
-          <tr>
-            <th>Page</th>
-            <th>Last Reported</th>
-          </tr>
           
           <?php
             
             $unitDirPaths = glob($dataDir . '*' , GLOB_ONLYDIR);
+
+            if (count($unitDirPaths) != 0) {
+              echo
+              '<table id="unit-table">
+                <tr>
+                  <th>Page</th>
+                  <th>Last Reported</th>
+                </tr>';
+            }
+            else {
+              echo '<h2 class="subtitle-simple center">No units currently reporting.</h2>';
+            }
             
             foreach ($unitDirPaths as $unitDirPath) {
                 
@@ -77,9 +83,12 @@
 
                 echo '</tr>';
             }
+
+            if (count($unitDirPaths) != 0) {
+              echo '</table>';
+            }
+
           ?>
-        
-        </table>
 
       </div>
     </div>
