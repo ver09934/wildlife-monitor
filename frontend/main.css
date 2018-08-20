@@ -37,42 +37,6 @@ html, body {
   padding: 0px 15px 15px 15px;
 }
 
-.title {
-  font-weight: 400;
-  width: 100%;
-  background-color: #bbb;
-  padding: 30px 0px;
-  text-align: center;
-  margin: 0px;
-}
-
-.subtitle {
-  font-weight: 300;
-  /* background-color: #3b79dd; */
-  background-color: #3a3b60;
-  padding: 15px;
-  color: #fff;
-  border-radius: 5px;
-  text-align: center;
-  margin: 20px 0px;
-}
-
-.title-simple {
-  text-align: center;
-  font-weight: 400;
-}
-
-.subtitle-simple {
-  text-align: center;
-  font-weight: 300;
-}
-
-.center-align {
-  margin: auto;
-  display: block;
-  border-radius: 6px;
-}
-
 /* --- Navbar --- */
 
 nav {
@@ -103,6 +67,52 @@ nav a {
 
 nav a:hover {
   color: #8e8e8e;
+}
+
+/* --- Titles and Subtitles --- */
+
+.title {
+  font-weight: 400;
+  width: 100%;
+  background-color: #bbb;
+  padding: 30px 0px;
+  text-align: center;
+  margin: 0px;
+}
+
+.subtitle {
+  font-weight: 300;
+  /* background-color: #3b79dd; */
+  background-color: #3a3b60;
+  padding: 15px;
+  color: #fff;
+  border-radius: 5px;
+  text-align: center;
+  margin: 20px 0px;
+}
+
+.title-simple {
+  font-weight: 400;
+}
+
+.subtitle-simple {
+  font-weight: 300;
+}
+
+.title-simple.center {
+  text-align: center;
+}
+
+.subtitle-simple.center {
+  text-align: center;
+}
+
+/* --- Current Image --- */
+
+#current-image {
+  margin: auto;
+  display: block;
+  border-radius: 6px;  
 }
 
 /* --- Unit List --- */

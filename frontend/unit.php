@@ -77,7 +77,7 @@
         <h2 class="subtitle">Current Image</h2>
 
         <?php
-          echo '<img class="center-align" src="' . $currentImagePath . '" alt="' . $currentImageAlt . '">';
+          echo '<img id="current-image" src="' . $currentImagePath . '" alt="' . $currentImageAlt . '">';
         ?>
         
         <h2 class="subtitle">Sensor Data</h2>
