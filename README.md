@@ -44,22 +44,17 @@ In addition, the gitignored directory `frontend/data` should be created in the r
 To set up the unit, flash the SD card with raspbian, ideally the headless version, which uses fewer system resources. In addition, you should configure a wireless internet connection by editing the file `/etc/wpa_supplicant/wpa_supplicant.conf`, and insure that you have ssh access to the Pi. More information can be found [here](https://www.raspberrypi.org/documentation/configuration/wireless/).
 
 ### SSH Keys
-In order to send its data to the server, each Pi must be configured to use ssh keys to communicate with the server. To do this, run `$ ssh-keygen` or `$ ssh keygen -b 4096` for a 4096-bit key. Be sure not to set a passphrase, as this would prevent the script from being able to automate the process of synchronizing data with the server. They key can be copied to the server by running `$ ssh-copy-id user@hostname`, with your user information for the remote server.
+In order to send its data to the server, each Pi must be configured to use ssh keys to communicate with the server. To do this, run `$ ssh-keygen`, or `$ ssh keygen -b 4096` for a 4096-bit key. Be sure not to set a passphrase, as this would prevent the script from being able to automate the process of synchronizing data with the server. They key can be copied to the server by running `$ ssh-copy-id user@hostname`, with your user information for the remote server.
 
 In addition, one should manually ssh into the server after configuring ssh keys to insure that the server is in the list of known hosts, and that a connection can be made with no user confirmation, so that the script will be able to connect automatically.
 
 For more information on setting up ssh keys, see [here](https://www.digitalocean.com/community/tutorials/how-to-set-up-ssh-keys-on-ubuntu-1804).
 
 ### Script Download and Dependencies
-The repository can be cloned anywhere on the Pi, such as in the user's home directory. The dependencies to install are listed below:
-
-`apt` installations:
-(TODO)
-They can be installed with the command: `$ sudo apt install`
-
-`pip3` installations:
-(TODO)
-They can be installed with the command: `$ sudo pip3 install`
+The repository can be cloned anywhere on the Pi, such as in the user's home directory. As long as you are running a recent version of Raspbian, the dependencies can all be installed with `apt`:
+```bash
+$ sudo apt install python3 python3-pip i2c-tools python3-smbus python3-picamera gpac rsync
+```
 
 ### info.xml
 Currently, a file called `info.xml` is used to configure some parameters used by the sensor script, so it is not neccesary to modify the script file. It is gitignored, so you must create it yourself in the root directory of the repository.
