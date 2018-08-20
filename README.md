@@ -59,7 +59,7 @@ $ sudo apt install python3 python3-pip i2c-tools python3-smbus python3-picamera 
 ### info.xml
 Currently, a file called `info.xml` is used to configure some parameters used by the sensor script, so it is not neccesary to modify the script file. It is gitignored, so you must create it yourself in the root directory of the repository.
 
-It is important to note that the `name` field must be unique, so it is a good idea to use a naming scheme that will not result in conflicting names, and insure that no other units of the same name are attempting to send data to the same server.
+It is important to note that the `name` fields of separate units must be unique, so it is a good idea to use a naming scheme that will not result in conflicting names, and insure that no other units of the same name are attempting to send data to the same server.
 
 An example configuration is shown below:
 ```xml
