@@ -44,7 +44,6 @@
       $prettyName = $infoXml->$prettyNameField;
       echo '<title>' . $prettyName . '</title>';
     ?>
-    <title>Test Unit</title>
     <link rel="stylesheet" type="text/css" href="main.css">
     <link rel="icon" href="/favicon.png">
     <script type="text/javascript">
