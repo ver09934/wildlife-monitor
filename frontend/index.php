@@ -12,6 +12,8 @@
   // Datalog XML fields
   $timeField = 'time';
 
+  $dataNotFound = "Data unavailable";
+
 ?>
 <!DOCTYPE html>
 <html>
@@ -79,6 +81,9 @@
                   $elemCount = $xml->count();
                   echo '<td>' . $xml->row[$elemCount - 1]->$timeField . '</td>';
 
+                }
+                else { 
+                  echo '<td>' . $dataNotFound . '</td>';
                 }
 
                 echo '</tr>';
