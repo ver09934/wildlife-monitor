@@ -23,3 +23,5 @@ __pycache__
 # youtube streaming key (at /yt-stream-key.txt or /backend/yt-stream-key.txt
 yt-stream-key.txt
 
+# python virtual environments
+venv
