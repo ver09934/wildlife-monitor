@@ -13,10 +13,12 @@ import xml.etree.ElementTree as ElementTree
 # custom modules
 import MPL3115A2 as baro
 from lameXMLFormatter import *
+from opencv-filter import *
 
 PIR_PIN = 17
 LED_PIN = 4
 
+TMP_DATA_DIR = '../tmpdata' # Needs '/' at the end
 DATA_DIR = '../data/' # Needs '/' at the end
 VIDEO_SUBDIR = 'videos/' # Needs '/' at the end
 DATALOG_SUBDIR = 'datalogs/' # Needs '/' at the end
