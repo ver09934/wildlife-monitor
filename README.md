@@ -51,10 +51,12 @@ In addition, one should manually ssh into the server after configuring ssh keys 
 For more information on setting up ssh keys, see [here](https://www.digitalocean.com/community/tutorials/how-to-set-up-ssh-keys-on-ubuntu-1804).
 
 ### Script Download and Dependencies
-The repository can be cloned anywhere on the Pi, such as in the user's home directory. As long as you are running a recent version of Raspbian, the dependencies can all be installed with `apt`:
+The repository can be cloned anywhere on the Pi, such as in the user's home directory. As long as you are running a recent version of Raspbian, the dependencies can all be installed with `apt` and `pip`:
 ```bash
-$ sudo apt install python3 python3-pip i2c-tools python3-smbus python3-picamera gpac rsync
+$ sudo apt install $(cat apt-reqs.txt)
+$ sudo pip install -r requirements.txt
 ```
+(The apt requirements should be installed first, since they insure that pip is installed.
 
 ### info.xml
 Currently, a file called `info.xml` is used to configure some parameters used by the sensor script, so that it is not neccesary to modify the script file. It is gitignored, so you must create it yourself in the root directory of the repository.
