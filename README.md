@@ -56,7 +56,13 @@ The repository can be cloned anywhere on the Pi, such as in the user's home dire
 $ sudo apt install $(cat apt-reqs.txt)
 $ sudo pip install -r requirements.txt
 ```
-(The apt requirements should be installed first, since they insure that pip is installed.
+(The apt requirements should be installed first, since they insure that pip is installed.)
+
+If you would prefer to install the pip requirements in a virtual environment, one can be created by running the following commands in the python script directory before installing the pip requirements:
+```bash
+$ python3 -m venv venv
+$ . venv/bin/activate
+```
 
 ### info.xml
 Currently, a file called `info.xml` is used to configure some parameters used by the sensor script, so that it is not neccesary to modify the script file. It is gitignored, so you must create it yourself in the root directory of the repository.
