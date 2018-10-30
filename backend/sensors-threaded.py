@@ -11,7 +11,7 @@ import datetime
 import xml.etree.ElementTree as ElementTree
 
 # custom modules
-import MPL3115A2 as baro
+# import MPL3115A2 as baro
 from lameXMLFormatter import *
 
 PIR_PIN = 17
@@ -193,7 +193,8 @@ def dataMotionThread():
         timeQueue.put(timeString)
         
         baroLock.acquire()
-        baroData = baro.getData()
+        # baroData = baro.getData()
+        baroData = [20, 20]
         baroLock.release()
         
         data['pressure'] = baroData[0]
@@ -229,7 +230,8 @@ def dataIntervalThread(cameraIn):
         minutely.clear()
 
         baroLock.acquire()
-        baroData = baro.getData()
+        # baroData = baro.getData()
+        baroData = [20, 20]
         baroLock.release()
 
         data = {}
