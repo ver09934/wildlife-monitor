@@ -4,26 +4,46 @@ import time
 import subprocess
 import os
 from picamera import PiCamera
+from picamera.array import PiRGBArray
 import atexit # For exit handling
 import threading
 import queue
 import datetime
 import xml.etree.ElementTree as ElementTree
+import imutils
+import cv2
+import warnings
 
 # custom modules
 import MPL3115A2 as baro
 from lameXMLFormatter import *
-from opencv-filter import *
 
-PIR_PIN = 17
+# To ignore warnings from PiCamera that it is "using alpha-stripping to convert to non-alpha format"
+warnings.filterwarnings("ignore")
+
+# Define pins
 LED_PIN = 4
 
+ # Data parameters
 TMP_DATA_DIR = '../tmpdata' # Needs '/' at the end
 DATA_DIR = '../data/' # Needs '/' at the end
 VIDEO_SUBDIR = 'videos/' # Needs '/' at the end
 DATALOG_SUBDIR = 'datalogs/' # Needs '/' at the end
 INFO_FILE = '../info.xml'
 PREVIEW_IMG = 'preview-img.jpg'
+
+# OpenCV parameters
+MIN_MOTION_FRAMES = 10
+MIN_NOMOTION_FRAMES = 10
+DELTA_THRESH = 5
+CVRES = [640, 480]
+CV_FPS = 25
+MIN_AREA = 700
+
+# Camera parameters
+HIGHRES = [1280, 960]
+LOWRES = [640, 480]
+CAM_FPS = 25
 
 tree = ElementTree.parse(INFO_FILE)
 root = tree.getroot()
@@ -38,12 +58,6 @@ if not info['serverdatadir'].endswith('/'):
 CP_CMD = 'cp ' + INFO_FILE + ' ' + DATA_DIR
 SYNC_CMD = "rsync -az --delete --exclude '*.h264' --exclude '.*' " + DATA_DIR + " " + info['serveruser'] + "@" + info['serverdomain'] + ":" + info['serverdatadir'] + info['name']
 CONVERT_CMD = "bash videoconvert.sh " + DATA_DIR + VIDEO_SUBDIR
-
-HIGHRES_VERT = 1280
-HIGHRES_HORIZ = 720
-LOWRES_VERT = 640
-LOWRES_HORIZ = 360
-CAM_FPS = 25
 
 # --- Define semaphores, events, locks, queues, etc. here so they don't have to be passed to methods as arguments ---
 
@@ -65,12 +79,11 @@ def main():
 
     # Create camera object
     camera = PiCamera()
-    camera.resolution = (HIGHRES_VERT, HIGHRES_HORIZ)
-    camera.framerate = CAM_FPS
+    camera.resolution = tuple(HIGHRES)
+    camera.framerate = CV_FPS
 
     # Setup GPIO pins
     GPIO.setmode(GPIO.BCM)
-    GPIO.setup(PIR_PIN, GPIO.IN)
     GPIO.setup(LED_PIN, GPIO.OUT)
 
     # Create data directories
@@ -87,7 +100,7 @@ def main():
     # Start threads
     threads = []
     threads.append(threading.Thread(target=timerThread))
-    threads.append(threading.Thread(target=motionThread))
+    threads.append(threading.Thread(target=motionThread, args=(camera,)))
     threads.append(threading.Thread(target=cameraRecordThread, args=(camera,))) # Need the "," to make it a list
     threads.append(threading.Thread(target=dataMotionThread))
     threads.append(threading.Thread(target = dataIntervalThread, args=(camera,)))
@@ -133,43 +146,99 @@ def timerThread():
         time.sleep(0.001)
 
 # when motion is detected (based off PIR and camera stream), set the motion detected event, which other threads are listening for
-def motionThread():
-    
+def motionThread(cameraIn):
+
     print('--- Motion Detection Thread Started ---')
 
-    motionDetected = False
-    triggerCount = 0
+    rawCapture = PiRGBArray(cameraIn, size=tuple(CVRES))
+    time.sleep(0.2)
     
-    motionEnd.set()
+    avg = None
 
-    # Give all the threads time to start
-    time.sleep(1)
- 
-    while True:
+    motionCounter = 0
+    noMotionCounter = 0
+
+    motionDetected = False    
+
+    # If neccesary: ...use_video_port=True, splitter_port=3, resize=tuple(CVRES)...
+    for f in cameraIn.capture_continuous(rawCapture, format="bgr", use_video_port=True, resize=tuple(CVRES)):
         
-        # If state changes from low to high
-        if motionDetected == False and GPIO.input(PIR_PIN):
-            
-            motionDetected = True
-            triggerCount += 1
-            GPIO.output(LED_PIN, GPIO.HIGH)
-            print() # print('\n', end='')
-            print("Motion event detected...")
-            
-            motionEnd.clear()
-            motionStart.set()
-            
-        # If state changes from high to low
-        if motionDetected == True and (not GPIO.input(PIR_PIN)):
-            
-            motionDetected = False
-            GPIO.output(LED_PIN, GPIO.LOW)
-            print("Motion event completed...")
-            
-            motionStart.clear()
-            motionEnd.set()
+        # grab raw numpy array representing image
+        frame = f.array
 
-        time.sleep(0.001)
+        # resize the frame, convert it to grayscale, and blur it
+        frame = imutils.resize(frame, width=500)
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        gray = cv2.GaussianBlur(gray, (21, 21), 0)
+
+        # if average frame is None, initialize it
+        if avg is None:
+            avg = gray.copy().astype("float")
+            rawCapture.truncate(0)
+            continue
+
+        # accumulate weighted average between current frame and previous frames, then compute difference between current frame and running average
+        cv2.accumulateWeighted(gray, avg, 0.5)
+        frameDelta = cv2.absdiff(gray, cv2.convertScaleAbs(avg))
+
+        # threshold delta image, dilate thresholded image to fill in holes, then find contours on thresholded image
+        thresh = cv2.threshold(frameDelta, DELTA_THRESH, 255, cv2.THRESH_BINARY)[1]
+        thresh = cv2.dilate(thresh, None, iterations=2)
+        cnts = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        if imutils.is_cv2():
+            cnts = cnts[0]
+        else:
+            cnts = cnts[1]
+
+        # whether the current frame has motion
+        currentMotion = False
+
+        # loop over contours - if contour large enough, draw contour's bounding box, update currentMotion state
+        for c in cnts:
+            if cv2.contourArea(c) >= MIN_AREA:
+                (x, y, w, h) = cv2.boundingRect(c)
+                cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+                currentMotion = True
+
+        # if frame has motion
+        if currentMotion:
+            noMotionCounter = 0
+            motionCounter += 1
+
+            # check to see if the number of frames with consistent motion is high enough
+            if motionCounter >= MIN_MOTION_FRAMES:
+
+                if (motionDetected == False):
+                    motionDetected = True
+
+                    GPIO.output(LED_PIN, GPIO.HIGH)
+                    print("\nMotion event detected...")
+
+                    motionEnd.clear()
+                    motionStart.set()
+
+                motionCounter = 0
+
+        # otherwise, frame has no motion
+        else:
+            motionCounter = 0
+            noMotionCounter += 1
+
+            if noMotionCounter >= MIN_NOMOTION_FRAMES:
+
+                if (motionDetected == True):
+                    motionDetected = False
+                    
+                    GPIO.output(LED_PIN, GPIO.LOW)
+                    print("Motion event completed...")
+            
+                    motionStart.clear()
+                    motionEnd.set()
+
+                noMotionCounter = 0
+
+        # clear the stream in preparation for next frame
+        rawCapture.truncate(0)
 
 # record data when motion is detected (waits for lock on baro), higher priority than dataIntervalThread
 # Creates a separate file for each event, with name corresponding to the created video file
@@ -247,7 +316,7 @@ def dataIntervalThread(cameraIn):
         # Take minutely image, overwriting previous image
 
         imgPath = DATA_DIR + PREVIEW_IMG
-        cameraIn.capture(imgPath, resize=(LOWRES_VERT, LOWRES_HORIZ))
+        cameraIn.capture(imgPath, resize=tuple(LOWRES))
 
         sync.set()
 
@@ -272,7 +341,6 @@ def cameraRecordThread(cameraIn):
         print("Recording end...")
   
         vidconvert.set()
-        sync.set()
         
 def videoconvertThread():
     
@@ -284,6 +352,8 @@ def videoconvertThread():
         sp = subprocess.Popen(CONVERT_CMD, shell=True, stdout=subprocess.DEVNULL)
         sp.wait()
         vidconvert.clear()
+
+        sync.set()
         
 def filesyncThread():
 
