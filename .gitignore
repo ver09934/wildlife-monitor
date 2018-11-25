@@ -1,7 +1,7 @@
 # .gitignore for wildlife monitor
 
 # unit info file
-/info.xml
+/info.xml*
 
 # data directories
 /data
