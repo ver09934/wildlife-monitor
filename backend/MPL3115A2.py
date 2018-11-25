@@ -1,4 +1,4 @@
-from smbus import SMBus
+from smbus2 import SMBus
 import time
 
 # I2C Values
