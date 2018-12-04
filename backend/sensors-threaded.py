@@ -11,7 +11,7 @@ import datetime
 import xml.etree.ElementTree as ElementTree
 
 # custom modules
-import MPL3115A2 as baro
+import MPL115A2 as baro
 from lameXMLFormatter import *
 
 PIR_PIN = 17
