@@ -1,5 +1,8 @@
-from smbus2 import SMBus
 import time
+try:
+    from smbus import SMBus
+except ImportError:
+    from smbus2 import SMBus
 
 # I2C Values
 MPL3115A2_ADDRESS = 0x60
