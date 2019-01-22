@@ -78,6 +78,7 @@ An example configuration is shown below:
     <serveruser>exampleuser</serveruser>
     <serverdomain>subdomain.exampledomain.com</serverdomain>
     <serverdatadir>/var/www/html/wildlife-monitor/frontend/data/</serverdatadir>
+    <sshid>~/.ssh/id_rsa.example</sshid>
 </info>
 
 ```

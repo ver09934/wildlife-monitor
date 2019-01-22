@@ -55,8 +55,13 @@ for child in root:
 if not info['serverdatadir'].endswith('/'):
     info['serverdatadir'] += '/'
 
+if 'sshid' in info:
+    key_addition = "-e " + str(info['sshid']) + " "
+else:
+    key_addition = ""
+
 CP_CMD = 'cp ' + INFO_FILE + ' ' + DATA_DIR
-SYNC_CMD = "rsync -az --delete --exclude '*.h264' --exclude '.*' " + DATA_DIR + " " + info['serveruser'] + "@" + info['serverdomain'] + ":" + info['serverdatadir'] + info['name']
+SYNC_CMD = "rsync -az --delete --exclude '*.h264' --exclude '.*' " + key_addition + DATA_DIR + " " + info['serveruser'] + "@" + info['serverdomain'] + ":" + info['serverdatadir'] + info['name']
 CONVERT_CMD = "bash videoconvert.sh " + DATA_DIR + VIDEO_SUBDIR
 
 # --- Define semaphores, events, locks, queues, etc. here so they don't have to be passed to methods as arguments ---
