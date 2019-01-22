@@ -1,6 +1,9 @@
 #!/usr/bin/python
 import time
-import smbus
+try:
+    from smbus import SMBus
+except ImportError:
+    from smbus2 import SMBus
 
 def getData():
 
@@ -58,17 +61,12 @@ def getData():
 	rawtemp = (bus.read_byte_data(addr, 0x02) << 2) | \
 		   (bus.read_byte_data(addr, 0x03) >> 6)
 
-	# print("\nRaw pres = 0x%3x %4d" % (rawpres, rawpres))
-	# print("Raw temp = 0x%3x %4d" % (rawtemp, rawtemp))
-
 	pcomp = a0f + (b1f + c12f * rawtemp) * rawpres + b2f * rawtemp
 	pkpa = pcomp / 15.737 + 50
 	# print("Pres = %3.2f kPa" % pkpa)
 
 	temp = 25.0 - (rawtemp - 498.0) / 5.35
-	# print("Temp = %3.2f" % temp)
 
-	# print([round(pkpa, 2), round(temp, 2)])
 	return [round(pkpa, 2), round(temp, 2)]
 
 def main():

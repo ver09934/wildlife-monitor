@@ -5,11 +5,9 @@ python3-smbus
 python3-picamera
 gpac
 rsync
-
 libatlas-base-dev
 libjasper-dev
 libqtgui4
 libqt4-test
-
 python-rpi.gpio
 python3-rpi.gpio
