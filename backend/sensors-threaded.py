@@ -15,7 +15,7 @@ import cv2
 import warnings
 
 # custom modules
-import MPL115A2 as baro
+import MPL3115A2 as baro
 from lameXMLFormatter import *
 
 # To ignore warnings from PiCamera that it is "using alpha-stripping to convert to non-alpha format"

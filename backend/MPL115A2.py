@@ -7,7 +7,7 @@ except ImportError:
 
 def getData():
 
-	bus = smbus.SMBus(1)
+	bus = SMBus(1)
 
 	addr = 0x60
 
