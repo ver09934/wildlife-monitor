@@ -1,5 +1,5 @@
 opencv-python
 imutils
 picamera
-smbus
+RPi.GPIO
 smbus2

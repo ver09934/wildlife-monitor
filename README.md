@@ -54,7 +54,7 @@ For more information on setting up ssh keys, see [here](https://www.digitalocean
 The repository can be cloned anywhere on the Pi, such as in the user's home directory. As long as you are running a recent version of Raspbian, the dependencies can all be installed with `apt` and `pip`:
 ```bash
 $ sudo apt install $(cat apt-reqs.txt)
-$ sudo pip install -r requirements.txt
+$ pip install -r requirements.txt
 ```
 (The apt requirements should be installed first, since they insure that pip is installed.)
 
