@@ -2,7 +2,9 @@
 
 # cd $(cat sensors.py | grep "DATA_DIR =" | cut -d"'" -f2)
 
-cd $1
+if [ -n "$1" ]; then
+	cd $1
+fi
 
 for j in $(ls *.h264 2>/dev/null)
 do
