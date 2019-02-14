@@ -1,4 +1,3 @@
-#!/usr/bin/python
 import time
 try:
     from smbus import SMBus
