@@ -26,3 +26,7 @@ yt-stream-key.txt
 
 # python virtual environments
 venv
+
+# vscode project dir
+.vscode
+
