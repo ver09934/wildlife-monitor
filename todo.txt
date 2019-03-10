@@ -1,0 +1,12 @@
+- Make less monolithic and more modular
+- Define a class for a general sensor
+- Define a classs for a general motion sensor
+        - Can then have a dummy that triggers periodically
+- Move to an SCP queue
+        - Attempt to handle failures...
+- Use JSON for more stuff if possible
+- Eliminate the lameXMLFormatter
+- Eliminate videoconvert.sh
+- Make the main file simpler
+- Improve user setup
+- Set whether the system takes pictures or videos on motion detect
