@@ -1,12 +1,24 @@
 - Make less monolithic and more modular
-- Define a class for a general sensor
-- Define a classs for a general motion sensor
-        - Can then have a dummy that triggers periodically
-- Move to an SCP queue
+	- Make the main file simpler, move stuff into other modules
+	- Define an abstract class for a dataSensor
+	- Define an abstract classs for a general motionSensor
+        	- Can then have a dummy that triggers periodically
+- Move to an SCP queue, delete files once transferred
         - Attempt to handle failures...
-- Use JSON for more stuff if possible
-- Eliminate the lameXMLFormatter
-- Eliminate videoconvert.sh
-- Make the main file simpler
-- Improve user setup
-- Set whether the system takes pictures or videos on motion detect
+- Use JSON for config file
+	- See pyimgsearch motion detection examples
+- Eliminate the lameXMLFormatter, make the move to JSON if possible
+- Eliminate videoconvert.sh if possible (it would be better to write this in python as well)
+- Improve user setup, make more intuitive
+	- Set whether the system takes pictures or videos on motion detect
+	- Set which motion and data sensors to use in the config file
+		- Could also detect sensors automatically using connected based on i2c addresses
+	- Need to add scripts for 
+	- Handle errors in config file
+	- A sensor test script that uses i2cdetect to determine which hex adresses are active
+	- Write a complete setup script (git clone, dependencies, venv, etc) - error handling!
+	- In main script, can have array of sensors, array of sensor locks, etc.
+- Allow user to specify ssh key to use for rsync/scp/sftp
+- Optional CV config in specs files
+	- An OpenCV subsection, with more parameters/fields specified within
+
