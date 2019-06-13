@@ -261,6 +261,7 @@ def dataMotionThread():
         data = {}
         
         # Run the two calls to time.strftime at the same time, so the times are the same (excluding the unlikely border condition)
+        # TODO: Figure out a way to create a time object for the specific time, and then call strftime using that twice, to avoid border condition
         data['time'] = time.strftime('%m/%d/%Y %H:%M:%S %Z')
         timeString = time.strftime('%Y-%m-%d-%H-%M-%S')
         

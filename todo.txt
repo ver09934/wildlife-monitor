@@ -5,6 +5,7 @@
         	- Can then have a dummy that triggers periodically
 - Move to an SCP queue, delete files once transferred
         - Attempt to handle failures...
+	- Attempt to make the synchronization as modular as the sensor system (can use rsync, the scp queue, etc.)
 - Use JSON for config file
 	- See pyimgsearch motion detection examples
 - Eliminate the lameXMLFormatter, make the move to JSON if possible
@@ -27,5 +28,16 @@
 		- Row 1: Name of field
 		- Row 2: Value
 		- Row 3: Units
+	- UPDATE: Will return a list of 1x3 arrays, in true pythonic fashion...
 	- Minutely data gets written to JSON file
 	- Motion events get written to a log JSON file
+
+TODO: Update README with the multitude of changes that have/will have been made to the system
+TODO: Update README to insure that renamed files are correct (- to _, etc.)
+
+Motion sensor architecture:
+- Create object
+- Need to create some sort of async system that waits on the object for motion_start and motion_stop events to control if the camera is run
+
+TODO:
+Camera class passes back a queue that main method pulls events from?
